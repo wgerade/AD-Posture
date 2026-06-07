@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: Lint and test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install PowerShell test tools
+        shell: powershell
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          $moduleRoot = Join-Path $env:RUNNER_TEMP 'psmodules'
+          New-Item -Path $moduleRoot -ItemType Directory -Force | Out-Null
+          Save-Module Pester -RequiredVersion 4.10.1 -Path $moduleRoot -Force
+          Save-Module PSScriptAnalyzer -Path $moduleRoot -Force
+          "PSModulePath=$moduleRoot$([IO.Path]::PathSeparator)$env:PSModulePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Get-ChildItem -Path $moduleRoot -Recurse -Filter '*.psd1' |
+            Where-Object { $_.Directory.Name -match '^\d+\.' } |
+            ForEach-Object { Write-Host "Installed module manifest: $($_.FullName)" }
+
+      - name: Run project checks
+        shell: powershell
+        run: |
+          Get-Module -ListAvailable Pester, PSScriptAnalyzer |
+            Sort-Object Name, Version |
+            Select-Object Name, Version, Path |
+            Format-Table -AutoSize
+          .\scripts\Invoke-ProjectChecks.ps1
+
+      - name: Verify no sensitive generated artifacts are tracked
+        shell: powershell
+        run: |
+          $tracked = git ls-files
+          $sensitive = $tracked | Where-Object {
+            $_ -match '^reports/(?!\.gitkeep$)' -or
+            $_ -match '^data/(?!\.gitkeep$)' -or
+            $_ -match '^dashboard/(dashboard-data\.js|latest-dashboard\.json|timeline-data\.js|timeline-comparison\.json)$' -or
+            $_ -match '^config/ApprovedExceptions\.json$' -or
+            $_ -match '\.(key|pfx|pem|kdbx)$'
+          }
+          if ($sensitive) {
+            $sensitive | ForEach-Object { Write-Error "Sensitive generated artifact is tracked: $_" }
+            exit 1
+          }

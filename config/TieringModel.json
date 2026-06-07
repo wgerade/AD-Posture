@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Automatic privilege tier model based on Microsoft-style Tier 0/1/2 administration boundaries.",
+  "tiers": [
+    {
+      "tier": "Tier 0",
+      "description": "Identity control plane: forest, domain, DCs, AD-integrated DNS, GPO creation, PKI/key administration, and Exchange permissions that can affect AD.",
+      "groups": [
+        "Enterprise Admins",
+        "Schema Admins",
+        "Domain Admins",
+        "Administrators",
+        "Group Policy Creator Owners",
+        "Enterprise Key Admins",
+        "Key Admins",
+        "DnsAdmins",
+        "Cert Publishers",
+        "Exchange Windows Permissions",
+        "Exchange Trusted Subsystem",
+        "Organization Management",
+        "Domain Controllers",
+        "Read-only Domain Controllers",
+        "Protected Users"
+      ],
+      "accountTypePatterns": [
+        "DomainController"
+      ]
+    },
+    {
+      "tier": "Tier 1",
+      "description": "Server and application administration: backup, server operations, remote management, virtualization, storage, and RODC credential exposure.",
+      "groups": [
+        "Account Operators",
+        "Server Operators",
+        "Backup Operators",
+        "Print Operators",
+        "Incoming Forest Trust Builders",
+        "Hyper-V Administrators",
+        "Remote Management Users",
+        "Cryptographic Operators",
+        "Storage Replica Administrators",
+        "Allowed RODC Password Replication Group"
+      ],
+      "accountTypePatterns": [
+        "ServiceAccount",
+        "Computer"
+      ]
+    },
+    {
+      "tier": "Tier 2",
+      "description": "Workstation/user access and low-privilege delegated groups.",
+      "groups": [
+        "Remote Desktop Users",
+        "Windows Authorization Access Group",
+        "DnsUpdateProxy",
+        "Denied RODC Password Replication Group"
+      ],
+      "accountTypePatterns": [
+        "User",
+        "Group"
+      ]
+    }
+  ],
+  "defaultTier": "Tier 2"
+}
+

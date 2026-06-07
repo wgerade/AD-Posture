@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <title>AD Posture - ACL Posture</title>
+  <link rel="stylesheet" href="styles-v2.css" />
+</head>
+<body data-page="acl.html">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">AD</div>
+        <div>
+          <div class="sb-logo-text">AD Posture</div>
+          <div class="sb-logo-ver">Blue Team</div>
+        </div>
+      </div>
+      <div class="sb-domain">
+        <div class="sb-domain-dot"></div>
+        <div>
+          <div class="sb-domain-name" id="sb-domain">-</div>
+          <div class="sb-domain-sub" id="sb-lastrun">Last run: -</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section-label">Posture</div>
+      <a class="sb-item" href="objects.html"><span class="sb-icon">ADO</span><span>AD Objects</span></a>
+      <a class="sb-item" href="adcs.html"><span class="sb-icon">CA</span><span>ADCS</span></a>
+      <a class="sb-item" href="auth.html"><span class="sb-icon">KRB</span><span>Kerberos</span></a>
+      <a class="sb-item" href="trusts.html"><span class="sb-icon">TR</span><span>Trusts</span></a>
+      <a class="sb-item" href="dns.html"><span class="sb-icon">DNS</span><span>DNS</span></a>
+      <a class="sb-item" href="gpo.html"><span class="sb-icon">GPO</span><span>GPO</span></a>
+      <a class="sb-item active" aria-current="page" href="acl.html"><span class="sb-icon">ACL</span><span>ACL</span></a>
+      <div class="sb-section-label">Remediate</div>
+      <a class="sb-item" href="index.html"><span class="sb-icon">FIX</span><span>Action Plan</span></a>
+      <a class="sb-item" href="exceptions.html"><span class="sb-icon">EXC</span><span>Exceptions</span></a>
+      <div class="sb-section-label">Analysis</div>
+      <a class="sb-item" href="timeline.html"><span class="sb-icon">TIM</span><span>Timeline</span></a>
+      <div class="sb-section-label">Reporting</div>
+      <a class="sb-item" href="executive.html"><span class="sb-icon">RPT</span><span>Executive</span></a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-footer-label">Score target</div>
+      <div class="sb-footer-val ok" id="sb-target">0.00</div>
+      <div class="sb-footer-label">Progress toward zero</div>
+      <div class="sb-progress-bar"><div class="sb-progress-fill" id="sb-progress" style="width:0%"></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left"><span class="page-title">ACL</span><span class="topbar-sep">/</span><span class="topbar-sub">Dangerous ACEs / trustees / targets / remediation</span></div>
+      <div class="topbar-right"><label class="btn-icon">Import report<input type="file" id="acl-file" accept=".json" style="display:none" /></label></div>
+    </header>
+    <main class="content">
+      <div class="alert" id="acl-hint">Loading audit report...</div>
+          <div class="security-banner">Sensitive AD posture data: ACL findings may expose trustees, targets, SIDs, DNs, and privilege escalation paths.</div>
+      
+          <div class="toolbar acl-toolbar"><input type="search" id="acl-search" placeholder="Search trustee, target, DN, SID, right..." />
+            <select id="acl-right"><option value="">All rights</option></select>
+            <select id="acl-severity"><option value="">All severities</option></select>
+            <select id="acl-tag"><option value="">All tags</option></select>
+            <select id="acl-drift">
+              <option value="">All drift states</option>
+              <option value="New">New</option>
+              <option value="Changed">Changed</option>
+              <option value="Unchanged">Unchanged</option>
+              <option value="Missing">Missing</option>
+            </select>
+            <select id="acl-inherited">
+              <option value="">Direct and inherited</option>
+              <option value="false">Direct only</option>
+              <option value="true">Inherited only</option>
+            </select>
+            <button type="button" id="acl-clear" class="btn-clear-filters" aria-label="Clear all ACL filters">Clear filters</button>
+          </div>
+      
+          <section class="grid">
+            <div class="card"><h3>ACL findings</h3><div class="value" id="acl-count">-</div></div>
+            <div class="card"><h3>Critical / high</h3><div class="value" id="acl-critical">-</div></div>
+            <div class="card"><h3>DCSync paths</h3><div class="value" id="acl-dcsync">-</div></div>
+            <div class="card"><h3>New critical / high</h3><div class="value" id="acl-new-high">-</div></div>
+            <div class="card"><h3>Direct ACEs</h3><div class="value" id="acl-direct">-</div></div>
+            <div class="card"><h3>Trustees</h3><div class="value" id="acl-trustees">-</div></div>
+            <div class="card"><h3>Targets</h3><div class="value" id="acl-targets">-</div></div>
+          </section>
+      
+          <section class="panel focus-panel">
+            <div class="panel-title-row">
+              <div>
+                <h2>ACL queue</h2>
+                <p class="sub" style="margin:0">Review normalized ACL findings by score, right, trustee, and controlled target.</p>
+              </div>
+              <div class="insight-summary" id="acl-summary">-</div>
+            </div>
+            <div class="table-scroll acl-table-scroll">
+              <table id="acl-table" class="acl-table">
+                <thead>
+                  <tr>
+                    <th class="sortable sorted-desc" data-sort="RiskScore">Score</th>
+                    <th class="sortable" data-sort="Severity">Severity</th>
+                    <th class="sortable" data-sort="NormalizedRight">Right</th>
+                    <th class="sortable" data-sort="TrusteeName">Trustee</th>
+                    <th class="sortable" data-sort="TargetName">Target</th>
+                    <th>Scope</th>
+                    <th>Tags</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+      
+          <section class="panel object-profile" id="acl-profile">
+            <div class="panel-title-row">
+              <div>
+                <h2 id="acl-profile-title">ACL finding</h2>
+                <p class="sub" id="acl-profile-subtitle" style="margin:0">Select a row from the queue.</p>
+              </div>
+              <div class="readiness-meter" id="acl-profile-score">-</div>
+            </div>
+            <div id="acl-profile-body" class="empty-state">No ACL finding selected.</div>
+          </section>
+    </main>
+  </div>
+</div>
+  <script src="bootstrap.js"></script>
+  <script src="shared.js"></script>
+  <script src="acl.js"></script>
+  <script src="table-tools.js"></script>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": "1.0",
+  "CatalogVersion": "2026.06",
+  "Mappings": [
+    { "Domain": "SensitiveGroups", "Framework": "NIST CSF 2.0", "ControlId": "PR.AA-05", "ControlName": "Access permissions, entitlements, and authorizations", "Rationale": "Privileged group membership is an authorization entitlement.", "Version": "2.0" },
+    { "Domain": "SensitiveGroups", "Framework": "ISO/IEC 27001:2022", "ControlId": "A.8.2", "ControlName": "Privileged access rights", "Rationale": "Findings identify privileged access rights requiring governance.", "Version": "2022" },
+    { "Domain": "SensitiveGroups", "Framework": "SOC 2", "ControlId": "CC6.2", "ControlName": "Authorization prior to access", "Rationale": "Privileged memberships require authorized provisioning and removal.", "Version": "2017" },
+    { "Domain": "SensitiveGroups", "Framework": "CIS Controls v8", "ControlId": "5.4", "ControlName": "Restrict administrator privileges", "Rationale": "Sensitive groups grant administrative privileges.", "Version": "8.1" },
+    { "Domain": "ACL", "Framework": "NIST CSF 2.0", "ControlId": "PR.AA-05", "ControlName": "Access permissions, entitlements, and authorizations", "Rationale": "ACL findings concern authorization grants.", "Version": "2.0" },
+    { "Domain": "ACL", "Framework": "ISO/IEC 27001:2022", "ControlId": "A.5.15", "ControlName": "Access control", "Rationale": "Directory ACLs implement access controls.", "Version": "2022" },
+    { "Domain": "GPO", "Framework": "CIS Controls v8", "ControlId": "4.1", "ControlName": "Secure configuration process", "Rationale": "GPO findings identify insecure managed configuration.", "Version": "8.1" },
+    { "Domain": "ADCS", "Framework": "ISO/IEC 27001:2022", "ControlId": "A.8.24", "ControlName": "Use of cryptography", "Rationale": "ADCS findings concern governed certificate and cryptographic controls.", "Version": "2022" },
+    { "Domain": "DNS", "Framework": "NIST CSF 2.0", "ControlId": "PR.PS-01", "ControlName": "Configuration management practices", "Rationale": "DNS findings identify unsafe infrastructure configuration.", "Version": "2.0" },
+    { "Domain": "IdentityRisk", "Framework": "NIST CSF 2.0", "ControlId": "PR.AA-01", "ControlName": "Identities and credentials are managed", "Rationale": "Identity risk concerns account and credential governance.", "Version": "2.0" },
+    { "Domain": "Kerberos", "Framework": "NIST CSF 2.0", "ControlId": "PR.AA-03", "ControlName": "Users, services, and hardware are authenticated", "Rationale": "Kerberos posture affects authentication assurance.", "Version": "2.0" },
+    { "Domain": "Trust", "Framework": "ISO/IEC 27001:2022", "ControlId": "A.5.19", "ControlName": "Information security in supplier relationships", "Rationale": "Trusts extend authorization boundaries and require governance.", "Version": "2022" }
+  ]
+}

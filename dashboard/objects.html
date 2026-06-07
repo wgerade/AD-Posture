@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <title>AD Posture - Objects</title>
+  <link rel="stylesheet" href="styles-v2.css" />
+</head>
+<body data-page="objects.html">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">AD</div>
+        <div>
+          <div class="sb-logo-text">AD Posture</div>
+          <div class="sb-logo-ver">Blue Team</div>
+        </div>
+      </div>
+      <div class="sb-domain">
+        <div class="sb-domain-dot"></div>
+        <div>
+          <div class="sb-domain-name" id="sb-domain">-</div>
+          <div class="sb-domain-sub" id="sb-lastrun">Last run: -</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section-label">Posture</div>
+      <a class="sb-item active" aria-current="page" href="objects.html"><span class="sb-icon">ADO</span><span>AD Objects</span></a>
+      <a class="sb-item" href="adcs.html"><span class="sb-icon">CA</span><span>ADCS</span></a>
+      <a class="sb-item" href="auth.html"><span class="sb-icon">KRB</span><span>Kerberos</span></a>
+      <a class="sb-item" href="trusts.html"><span class="sb-icon">TR</span><span>Trusts</span></a>
+      <a class="sb-item" href="dns.html"><span class="sb-icon">DNS</span><span>DNS</span></a>
+      <a class="sb-item" href="gpo.html"><span class="sb-icon">GPO</span><span>GPO</span></a>
+      <a class="sb-item" href="acl.html"><span class="sb-icon">ACL</span><span>ACL</span></a>
+      <div class="sb-section-label">Remediate</div>
+      <a class="sb-item" href="index.html"><span class="sb-icon">FIX</span><span>Action Plan</span></a>
+      <a class="sb-item" href="exceptions.html"><span class="sb-icon">EXC</span><span>Exceptions</span></a>
+      <div class="sb-section-label">Analysis</div>
+      <a class="sb-item" href="timeline.html"><span class="sb-icon">TIM</span><span>Timeline</span></a>
+      <div class="sb-section-label">Reporting</div>
+      <a class="sb-item" href="executive.html"><span class="sb-icon">RPT</span><span>Executive</span></a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-footer-label">Score target</div>
+      <div class="sb-footer-val ok" id="sb-target">0.00</div>
+      <div class="sb-footer-label">Progress toward zero</div>
+      <div class="sb-progress-bar"><div class="sb-progress-fill" id="sb-progress" style="width:0%"></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left"><span class="page-title">AD Objects</span><span class="topbar-sep">/</span><span class="topbar-sub">AD object inventory / orphaned accounts / stale computers</span></div>
+      <div class="topbar-right"><label class="btn-icon">Import report<input type="file" id="objects-file" accept=".json" style="display:none" /></label></div>
+    </header>
+    <main class="content">
+      <div class="alert" id="objects-hint">Loading audit report...</div>
+          <div class="security-banner">Sensitive AD posture data: object profiles may expose SIDs, DNs, privileged paths, score evidence, and remediation intent.</div>
+      
+          <div class="toolbar object-toolbar"><input type="search" id="object-search" placeholder="Search object, SID, DN, tag, reason..." />
+            <select id="object-type"><option value="">All object types</option></select>
+            <select id="object-severity"><option value="">All severities</option></select>
+            <select id="object-tier"><option value="">All tiers</option></select>
+            <select id="object-tag"><option value="">All tags</option></select>
+          </div>
+      
+          <section class="grid">
+            <div class="card"><h3>Objects</h3><div class="value" id="obj-count">-</div></div>
+            <div class="card"><h3>Critical / high</h3><div class="value" id="obj-critical">-</div></div>
+            <div class="card"><h3>Tier 0 objects</h3><div class="value" id="obj-tier0">-</div></div>
+            <div class="card"><h3>Evidence rows</h3><div class="value" id="obj-evidence">-</div></div>
+            <div class="card"><h3>Relationships</h3><div class="value" id="obj-relationships">-</div></div>
+            <div class="card"><h3>Highest score</h3><div class="value" id="obj-highest">-</div></div>
+          </section>
+      
+          <section class="panel focus-panel">
+            <div class="panel-title-row">
+              <div>
+                <h2>AD object queue</h2>
+                <p class="sub" style="margin:0">Review objects by cumulative risk, then open a profile for evidence and related paths.</p>
+              </div>
+              <div class="insight-summary" id="object-summary">-</div>
+            </div>
+            <div class="table-scroll object-table-scroll">
+              <table id="objects-table" class="objects-table">
+                <thead>
+                  <tr>
+                    <th class="sortable sorted-desc" data-sort="RiskScore">Score</th>
+                    <th class="sortable" data-sort="DisplayName">Object</th>
+                    <th class="sortable" data-sort="ObjectClass">Class</th>
+                    <th class="sortable" data-sort="PrivilegeTier">Tier</th>
+                    <th class="sortable" data-sort="Severity">Severity</th>
+                    <th class="sortable" data-sort="EvidenceCount">Evidence</th>
+                    <th class="sortable" data-sort="RelationshipCount">Links</th>
+                    <th>Tags</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="table-pagination" id="object-pagination">
+              <button type="button" class="btn-icon" id="object-prev" aria-label="Previous page">Previous</button>
+              <span class="sub" id="object-page-status">Page 1</span>
+              <button type="button" class="btn-icon" id="object-next" aria-label="Next page">Next</button>
+            </div>
+          </section>
+      
+          <section class="panel object-profile" id="object-profile">
+            <div class="panel-title-row">
+              <div>
+                <h2 id="profile-title">AD object profile</h2>
+                <p class="sub" id="profile-subtitle" style="margin:0">Select an object from the queue.</p>
+              </div>
+              <div class="readiness-meter" id="profile-score">-</div>
+            </div>
+            <div id="profile-body" class="empty-state">No object selected.</div>
+          </section>
+    </main>
+  </div>
+</div>
+  <script src="bootstrap.js"></script>
+  <script src="shared.js"></script>
+  <script src="objects.js"></script>
+  <script src="table-tools.js"></script>
+</body>
+</html>
+
+
+
+

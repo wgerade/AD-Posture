@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <title>AD Posture - GPO Posture</title>
+  <link rel="stylesheet" href="styles-v2.css" />
+</head>
+<body data-page="gpo.html">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">AD</div>
+        <div>
+          <div class="sb-logo-text">AD Posture</div>
+          <div class="sb-logo-ver">Blue Team</div>
+        </div>
+      </div>
+      <div class="sb-domain">
+        <div class="sb-domain-dot"></div>
+        <div>
+          <div class="sb-domain-name" id="sb-domain">-</div>
+          <div class="sb-domain-sub" id="sb-lastrun">Last run: -</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section-label">Posture</div>
+      <a class="sb-item" href="objects.html"><span class="sb-icon">ADO</span><span>AD Objects</span></a>
+      <a class="sb-item" href="adcs.html"><span class="sb-icon">CA</span><span>ADCS</span></a>
+      <a class="sb-item" href="auth.html"><span class="sb-icon">KRB</span><span>Kerberos</span></a>
+      <a class="sb-item" href="trusts.html"><span class="sb-icon">TR</span><span>Trusts</span></a>
+      <a class="sb-item" href="dns.html"><span class="sb-icon">DNS</span><span>DNS</span></a>
+      <a class="sb-item active" aria-current="page" href="gpo.html"><span class="sb-icon">GPO</span><span>GPO</span></a>
+      <a class="sb-item" href="acl.html"><span class="sb-icon">ACL</span><span>ACL</span></a>
+      <div class="sb-section-label">Remediate</div>
+      <a class="sb-item" href="index.html"><span class="sb-icon">FIX</span><span>Action Plan</span></a>
+      <a class="sb-item" href="exceptions.html"><span class="sb-icon">EXC</span><span>Exceptions</span></a>
+      <div class="sb-section-label">Analysis</div>
+      <a class="sb-item" href="timeline.html"><span class="sb-icon">TIM</span><span>Timeline</span></a>
+      <div class="sb-section-label">Reporting</div>
+      <a class="sb-item" href="executive.html"><span class="sb-icon">RPT</span><span>Executive</span></a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-footer-label">Score target</div>
+      <div class="sb-footer-val ok" id="sb-target">0.00</div>
+      <div class="sb-footer-label">Progress toward zero</div>
+      <div class="sb-progress-bar"><div class="sb-progress-fill" id="sb-progress" style="width:0%"></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left"><span class="page-title">GPO</span><span class="topbar-sep">/</span><span class="topbar-sub">GPO links / policy hygiene / SYSVOL metadata</span></div>
+      <div class="topbar-right"><label class="btn-icon">Import report<input type="file" id="gpo-file" accept=".json" style="display:none" /></label></div>
+    </header>
+    <main class="content">
+      <div class="alert" id="gpo-hint">Loading audit report...</div>
+          <div class="security-banner">Sensitive AD posture data: GPO findings may expose policy names, links, scopes, SYSVOL paths, DNs, and remediation intent.</div>
+      
+          <div class="toolbar gpo-toolbar"><input type="search" id="gpo-search" placeholder="Search GPO, trustee, scope, DN, tag, reason..." />
+            <select id="gpo-type"><option value="">All finding types</option></select>
+            <select id="gpo-severity"><option value="">All severities</option></select>
+            <select id="gpo-tag"><option value="">All tags</option></select>
+            <select id="gpo-scope"><option value="">All scopes</option></select>
+            <select id="gpo-scope-tier"><option value="">All scope tiers</option></select>
+            <button type="button" id="gpo-clear" class="btn-clear-filters" aria-label="Clear all GPO filters">Clear filters</button>
+          </div>
+      
+          <section class="grid">
+            <div class="card"><h3>Risk findings</h3><div class="value" id="gpo-count">-</div></div>
+            <div class="card"><h3>Critical / high</h3><div class="value" id="gpo-critical">-</div></div>
+            <div class="card"><h3>Delegated control</h3><div class="value" id="gpo-delegated">-</div></div>
+            <div class="card"><h3>SYSVOL ACL</h3><div class="value" id="gpo-sysvol-acl">-</div></div>
+            <div class="card"><h3>Scripts / external</h3><div class="value" id="gpo-script-paths">-</div></div>
+            <div class="card"><h3>External paths</h3><div class="value" id="gpo-external-paths">-</div></div>
+            <div class="card"><h3>Integrity</h3><div class="value" id="gpo-integrity">-</div></div>
+            <div class="card"><h3>Settings / GPP</h3><div class="value" id="gpo-settings-gpp">-</div></div>
+            <div class="card"><h3>WMI / loopback</h3><div class="value" id="gpo-wmi-loopback">-</div></div>
+            <div class="card"><h3>GPOs</h3><div class="value" id="gpo-unique">-</div></div>
+          </section>
+      
+          <section class="panel focus-panel">
+            <div class="panel-title-row">
+              <div>
+                <h2>GPO queue</h2>
+                <p class="sub" style="margin:0">Review normalized GPO findings by score, type, policy, linked scope, and remediation.</p>
+              </div>
+              <div class="insight-summary" id="gpo-summary">-</div>
+            </div>
+            <div class="table-scroll gpo-table-scroll">
+              <table id="gpo-table" class="gpo-table">
+                <thead>
+                  <tr>
+                    <th class="sortable sorted-desc" data-sort="RiskScore">Score</th>
+                    <th class="sortable" data-sort="Severity">Severity</th>
+                    <th class="sortable" data-sort="FindingType">Type</th>
+                    <th class="sortable" data-sort="GpoName">GPO</th>
+                    <th class="sortable" data-sort="TrusteeName">Trustee</th>
+                    <th class="sortable" data-sort="ScopeName">Scope</th>
+                    <th>Status</th>
+                    <th>Tags</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+      
+          <section class="panel object-profile" id="gpo-profile">
+            <div class="panel-title-row">
+              <div>
+                <h2 id="gpo-profile-title">GPO finding</h2>
+                <p class="sub" id="gpo-profile-subtitle" style="margin:0">Select a row from the queue.</p>
+              </div>
+              <div class="readiness-meter" id="gpo-profile-score">-</div>
+            </div>
+            <div id="gpo-profile-body" class="empty-state">No GPO finding selected.</div>
+          </section>
+    </main>
+  </div>
+</div>
+  <script src="bootstrap.js"></script>
+  <script src="shared.js"></script>
+  <script src="gpo.js"></script>
+  <script src="table-tools.js"></script>
+</body>
+</html>
+
+
+
+

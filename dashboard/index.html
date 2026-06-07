@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <title>AD Posture - Action Plan</title>
+  <link rel="stylesheet" href="styles-v2.css" />
+</head>
+<body data-page="index.html">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">AD</div>
+        <div>
+          <div class="sb-logo-text">AD Posture</div>
+          <div class="sb-logo-ver">Blue Team</div>
+        </div>
+      </div>
+      <div class="sb-domain">
+        <div class="sb-domain-dot"></div>
+        <div>
+          <div class="sb-domain-name" id="sb-domain">-</div>
+          <div class="sb-domain-sub" id="sb-lastrun">Last run: -</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section-label">Posture</div>
+      <a class="sb-item" href="objects.html"><span class="sb-icon">ADO</span><span>AD Objects</span></a>
+      <a class="sb-item" href="adcs.html"><span class="sb-icon">CA</span><span>ADCS</span></a>
+      <a class="sb-item" href="auth.html"><span class="sb-icon">KRB</span><span>Kerberos</span></a>
+      <a class="sb-item" href="trusts.html"><span class="sb-icon">TR</span><span>Trusts</span></a>
+      <a class="sb-item" href="dns.html"><span class="sb-icon">DNS</span><span>DNS</span></a>
+      <a class="sb-item" href="gpo.html"><span class="sb-icon">GPO</span><span>GPO</span></a>
+      <a class="sb-item" href="acl.html"><span class="sb-icon">ACL</span><span>ACL</span></a>
+      <div class="sb-section-label">Remediate</div>
+      <a class="sb-item active" aria-current="page" href="index.html"><span class="sb-icon">FIX</span><span>Action Plan</span></a>
+      <a class="sb-item" href="exceptions.html"><span class="sb-icon">EXC</span><span>Exceptions</span></a>
+      <div class="sb-section-label">Analysis</div>
+      <a class="sb-item" href="timeline.html"><span class="sb-icon">TIM</span><span>Timeline</span></a>
+      <div class="sb-section-label">Reporting</div>
+      <a class="sb-item" href="executive.html"><span class="sb-icon">RPT</span><span>Executive</span></a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-footer-label">Score target</div>
+      <div class="sb-footer-val ok" id="sb-target">0.00</div>
+      <div class="sb-footer-label">Progress toward zero</div>
+      <div class="sb-progress-bar"><div class="sb-progress-fill" id="sb-progress" style="width:0%"></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="page-title">Action Plan</span><span class="topbar-sep">/</span>
+        <nav class="topbar-tabs" aria-label="Action plan sections">
+          <button type="button" class="topbar-tab" data-panel="actions-panel">Fix now</button>
+          <button type="button" class="topbar-tab" data-panel="insights-panel">Insights</button>
+          <button type="button" class="topbar-tab" data-panel="readiness-panel">Readiness</button>
+          <button type="button" class="topbar-tab" data-panel="accounts-panel">Accounts</button>
+          <button type="button" class="topbar-tab" data-panel="groups-panel">Groups</button>
+          <button type="button" class="topbar-tab" data-panel="members-panel">Paths</button>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box"><input type="search" id="search" placeholder="Search account, group, path..." aria-label="Search findings" /><span class="kbd">Ctrl K</span></div>
+        <label class="btn-icon" title="Import audit report">Import report<input type="file" id="file-input" accept=".json" style="display:none" /></label>
+      </div>
+    </header>
+    <main class="content">
+      <div class="alert" id="load-hint">Loading audit report...</div>
+      <div class="security-banner">Sensitive AD posture data: keep this dashboard local, restrict file access, and do not publish generated JSON/JS/CSV outputs.</div>
+      <div class="toolbar">
+        <select id="filter-group"></select>
+        <select id="filter-difficulty"><option value="">All difficulties</option><option>Low</option><option>Medium</option><option>High</option></select>
+        <select id="filter-type"><option value="">All types</option><option>User</option><option>ServiceAccount</option><option>Computer</option><option>Group</option></select>
+        <select id="filter-tier"><option value="">All tiers</option><option>Tier 0</option><option>Tier 1</option><option>Tier 2</option></select>
+        <div class="scope-toggle" id="filter-scope" role="group" aria-label="Finding scope">
+          <button type="button" class="scope-option active" data-scope="remediable" title="Findings that can be fixed directly, e.g. remove the principal from the group">Fix now</button>
+          <button type="button" class="scope-option" data-scope="actionable" title="Findings with a known remediation path, including policy or delegation changes">Needs review</button>
+          <button type="button" class="scope-option" data-scope="native" title="Built-in AD principals, e.g. SYSTEM or Domain Admins; monitor separately">Monitor only</button>
+          <button type="button" class="scope-option" data-scope="all" title="Show every finding regardless of remediation scope">All items</button>
+        </div>
+      </div>
+      <div class="filter-summary" id="filter-summary" aria-live="polite"></div>
+      <div class="score-hero">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 80 80" aria-hidden="true">
+            <circle cx="40" cy="40" r="30" fill="none" stroke="var(--surface-2)" stroke-width="9"></circle>
+            <circle id="score-ring-fill" cx="40" cy="40" r="30" fill="none" stroke="var(--danger)" stroke-width="9" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 40 40)"></circle>
+          </svg>
+          <div class="ring-center"><span class="ring-num" id="ring-num">-</span><span class="ring-lbl">score</span></div>
+        </div>
+        <div class="score-info">
+          <div class="score-kpi-label">Exposure score</div>
+          <div class="score-kpi-val" id="kpi-score">-</div>
+          <div class="score-kpi-sub">Target: <span id="kpi-target">0</span> &nbsp; / &nbsp; Domain: <span id="kpi-domain">-</span></div>
+          <div class="score-progress-wrap"><div class="score-progress-bar"><div class="score-progress-fill" id="score-progress-fill"></div></div><span class="score-progress-pct" id="score-progress-pct">-</span></div>
+        </div>
+        <div class="next-action" id="next-action">
+          <div class="next-action-label">Recommended first fix</div>
+          <div class="next-action-title">Loading remediation priority...</div>
+          <div class="next-action-meta">Waiting for audit data.</div>
+        </div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Readiness</div><div class="kpi-val" id="kpi-readiness">-</div><div class="kpi-sub" id="kpi-readiness-sub">Controls needing attention</div></div>
+        <div class="kpi-card"><div class="kpi-label">Actionable findings</div><div class="kpi-val" id="kpi-actionable">-</div><div class="kpi-sub" id="kpi-remediation">-</div></div>
+        <div class="kpi-card"><div class="kpi-label">Tier exposure</div><div class="kpi-val" id="kpi-tiering">-</div></div>
+        <div class="kpi-card"><div class="kpi-label">Exceptions</div><div class="kpi-val" id="kpi-exceptions">-</div><div class="kpi-sub" id="kpi-time">-</div></div>
+      </div>
+      <section class="panel focus-panel" id="insights-panel">
+      <div class="panel-title-row">
+        <div>
+          <h2>Exposure insights</h2>
+          <p class="sub" style="margin:0">Quick visual read of tiering, effort, account mix, and highest exposure groups.</p>
+        </div>
+        <div class="insight-summary" id="insight-summary">-</div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-tile">
+          <h3>Privilege tiers</h3>
+          <div class="donut-row">
+            <div class="donut" id="tier-donut" aria-label="Privilege tier distribution"></div>
+            <div class="legend" id="tier-legend"></div>
+          </div>
+        </div>
+        <div class="chart-tile">
+          <h3>Remediation effort</h3>
+          <div class="bar-list" id="difficulty-chart"></div>
+        </div>
+        <div class="chart-tile">
+          <h3>Account types</h3>
+          <div class="bar-list" id="account-type-chart"></div>
+        </div>
+        <div class="chart-tile chart-wide">
+          <h3>Top groups by exposure</h3>
+          <div class="bar-list compact" id="top-groups-chart"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel focus-panel" id="readiness-panel">
+      <div class="panel-title-row">
+        <div>
+          <h2>Readiness scorecard</h2>
+          <p class="sub" style="margin:0">Control view for remediation planning. The target is all controls passing and exposure score at 0.</p>
+        </div>
+        <div class="readiness-meter" id="readiness-meter">-</div>
+      </div>
+      <div class="scorecard-grid" id="scorecard-grid"></div>
+    </section>
+
+      <section class="panel focus-panel" id="actions-panel">
+      <h2>Fix now</h2>
+      <p class="sub" style="margin:0 0 0.75rem">Start here. These batches give the largest score reduction with the smallest review surface.</p>
+      <div class="table-scroll compact-table-scroll">
+        <table id="actions-table" class="actions-table">
+          <thead><tr><th class="sortable">Recommended action</th><th class="sortable">Members</th><th class="sortable">Findings</th><th class="sortable sorted-desc">Score reduction</th><th class="sortable">Top accounts</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel focus-panel" id="groups-panel">
+      <h2>Group exposure</h2>
+      <p class="sub" style="margin:0 0 0.75rem">Separate summary for prioritizing which sensitive groups need review first.</p>
+      <div class="table-scroll compact-table-scroll">
+        <table id="groups-table">
+          <thead>
+            <tr><th class="sortable">Group</th><th class="sortable">AD scope</th><th class="sortable">Privilege tier</th><th class="sortable">Members</th><th class="sortable sorted-desc">Aggregate score</th><th>Bar</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel focus-panel" id="accounts-panel">
+      <h2>Account exposure</h2>
+      <p class="sub" style="margin:0 0 0.75rem">Shows identities that appear through multiple sensitive paths.</p>
+      <div class="table-scroll compact-table-scroll">
+        <table id="accounts-table" class="accounts-table">
+          <thead><tr><th class="sortable">Account</th><th class="sortable">Type</th><th class="sortable">Paths</th><th class="sortable">Groups</th><th class="sortable sorted-desc">Total score</th><th class="sortable">Why it matters</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel focus-panel" id="members-panel">
+      <h2>Access paths</h2>
+      <p class="sub" style="margin:0 0 0.75rem">Operational queue sorted by score. Expand a row for UAC, ATT&CK, identity origin, dates, and score math.</p>
+      <div class="table-scroll">
+        <table id="findings-table">
+          <thead>
+            <tr>
+              <th class="sortable sorted-desc" data-sort="RiskScore">Score</th>
+              <th class="sortable" data-sort="MemberSam">Member</th>
+              <th class="sortable" data-sort="SensitiveGroup">Group</th>
+              <th class="sortable" data-sort="PrivilegeTier">Tier</th>
+              <th class="sortable" data-sort="AccountType">Type</th>
+              <th class="sortable" data-sort="AccountStatus">Status</th>
+              <th class="sortable" data-sort="MembershipChain">Access path</th>
+              <th class="sortable" data-sort="WhyThisMatters">Why this matters</th>
+              <th class="sortable" data-sort="RemediationDifficulty">Difficulty</th>
+              <th class="sortable" data-sort="CleanupActions">Fix</th>
+              <th>Details</th>
+              <th>Script</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel focus-panel" id="playbooks-panel">
+      <h2>Safe playbooks</h2>
+      <p class="sub" style="margin:0 0 0.75rem">Central remediation queue for ACL, GPO, ADCS, DNS, and sensitive-group findings. Scripts are review-ready and use WhatIf when deterministic; ambiguous changes stay blocked with a reason.</p>
+      <div class="table-scroll compact-table-scroll">
+        <table id="playbooks-table">
+          <thead>
+            <tr><th>Domain</th><th>Finding</th><th>Eligibility</th><th>Expected impact</th><th>Open</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel script-panel" id="script-panel" hidden>
+      <div class="panel-title-row">
+        <div>
+          <h2>Remediation script</h2>
+          <p class="sub" style="margin:0">Select a finding to generate a review-ready PowerShell script.</p>
+        </div>
+        <div class="script-actions">
+          <button type="button" class="secondary" id="copy-script" disabled>Copy</button>
+          <button type="button" id="download-script" disabled>Download TXT</button>
+        </div>
+      </div>
+      <pre id="script-output" class="chain script-output">No script generated yet.</pre>
+    </section>
+    </main>
+  </div>
+</div>
+  <script src="bootstrap.js"></script>
+  <script src="shared.js"></script>
+  <script src="app.js"></script>
+  <script src="table-tools.js"></script>
+</body>
+</html>

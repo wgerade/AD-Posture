@@ -1,0 +1,44 @@
+reports/*
+!reports/.gitkeep
+data/*
+!data/.gitkeep
+dashboard/dashboard-data.js
+dashboard/timeline-data.js
+dashboard/latest-dashboard.json
+dashboard/timeline-comparison.json
+*.log
+config/ApprovedExceptions.json
+config/*.local.json
+*.key
+*.pfx
+*.cer
+*.pem
+*.kdbx
+
+# PowerShell / build artifacts
+*.ps1xml
+*.pssc
+*.psrc
+*.zip
+*.nupkg
+TestResults/
+coverage/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Local environment
+.env
+.env.*
+*.local.json
+.gh-codex/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+.tmp-*/

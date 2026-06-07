@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <title>AD Posture - Exceptions</title>
+  <link rel="stylesheet" href="styles-v2.css" />
+</head>
+<body data-page="exceptions.html">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">AD</div>
+        <div>
+          <div class="sb-logo-text">AD Posture</div>
+          <div class="sb-logo-ver">Blue Team</div>
+        </div>
+      </div>
+      <div class="sb-domain">
+        <div class="sb-domain-dot"></div>
+        <div>
+          <div class="sb-domain-name" id="sb-domain">-</div>
+          <div class="sb-domain-sub" id="sb-lastrun">Last run: -</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section-label">Posture</div>
+      <a class="sb-item" href="objects.html"><span class="sb-icon">ADO</span><span>AD Objects</span></a>
+      <a class="sb-item" href="adcs.html"><span class="sb-icon">CA</span><span>ADCS</span></a>
+      <a class="sb-item" href="auth.html"><span class="sb-icon">KRB</span><span>Kerberos</span></a>
+      <a class="sb-item" href="trusts.html"><span class="sb-icon">TR</span><span>Trusts</span></a>
+      <a class="sb-item" href="dns.html"><span class="sb-icon">DNS</span><span>DNS</span></a>
+      <a class="sb-item" href="gpo.html"><span class="sb-icon">GPO</span><span>GPO</span></a>
+      <a class="sb-item" href="acl.html"><span class="sb-icon">ACL</span><span>ACL</span></a>
+      <div class="sb-section-label">Remediate</div>
+      <a class="sb-item" href="index.html"><span class="sb-icon">FIX</span><span>Action Plan</span></a>
+      <a class="sb-item active" aria-current="page" href="exceptions.html"><span class="sb-icon">EXC</span><span>Exceptions</span></a>
+      <div class="sb-section-label">Analysis</div>
+      <a class="sb-item" href="timeline.html"><span class="sb-icon">TIM</span><span>Timeline</span></a>
+      <div class="sb-section-label">Reporting</div>
+      <a class="sb-item" href="executive.html"><span class="sb-icon">RPT</span><span>Executive</span></a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-footer-label">Score target</div>
+      <div class="sb-footer-val ok" id="sb-target">0.00</div>
+      <div class="sb-footer-label">Progress toward zero</div>
+      <div class="sb-progress-bar"><div class="sb-progress-fill" id="sb-progress" style="width:0%"></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left"><span class="page-title">Exceptions</span><span class="topbar-sep">/</span><span class="topbar-sub">Approved exceptions / expiry tracking</span></div>
+      <div class="topbar-right"><label class="btn-icon">Import report<input type="file" id="exceptions-file" accept=".json" style="display:none" /></label><button type="button" class="btn-icon" id="exceptions-print">Print / Save PDF</button></div>
+    </header>
+    <main class="content">
+      <div class="alert" id="exceptions-hint">Loading audit report...</div>
+          <div class="security-banner">Sensitive AD posture data: exception records may expose owners, tickets, SIDs, DNs, and accepted risk.</div>
+          <section class="grid">
+            <div class="card"><h3>Approved active</h3><div class="value" id="exc-active">-</div></div>
+            <div class="card"><h3>Expired</h3><div class="value" id="exc-expired">-</div></div>
+            <div class="card"><h3>Expiring in 30 days</h3><div class="value" id="exc-expiring">-</div></div>
+            <div class="card"><h3>Accepted exposure</h3><div class="value" id="exc-score">-</div></div>
+            <div class="card"><h3>Missing governance</h3><div class="value" id="exc-missing">-</div></div>
+            <div class="card"><h3>Review target</h3><div class="value" id="exc-review-target">-</div></div>
+          </section>
+
+          <section class="panel">
+            <h2>Approved exceptions</h2>
+            <div class="table-scroll compact-table-scroll">
+              <table id="exceptions-review-table" class="exceptions-table">
+                <thead>
+                  <tr><th class="sortable">Status</th><th class="sortable">Scope</th><th class="sortable">Finding</th><th class="sortable">Score</th><th class="sortable">Owner</th><th class="sortable">Approved by</th><th class="sortable">Ticket</th><th class="sortable">Expires</th><th class="sortable">Reason</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+    </main>
+  </div>
+</div>
+  <script src="bootstrap.js"></script>
+  <script src="shared.js"></script>
+  <script src="exceptions.js"></script>
+  <script src="table-tools.js"></script>
+</body>
+</html>

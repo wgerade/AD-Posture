@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Active Directory sensitive groups (built-in and high privilege). Compatible with 2012 R2–2025.",
+  "groups": [
+    { "name": "Enterprise Admins", "riskWeight": 5, "tier": "Forest", "difficultyDefault": "High", "notes": "Full forest control" },
+    { "name": "Schema Admins", "riskWeight": 5, "tier": "Forest", "difficultyDefault": "High", "notes": "Schema modification" },
+    { "name": "Domain Admins", "riskWeight": 5, "tier": "Domain", "difficultyDefault": "High", "notes": "Full domain administration" },
+    { "name": "Administrators", "riskWeight": 5, "tier": "Builtin", "difficultyDefault": "High", "notes": "Builtin on DCs; effective DA members via AGDLP" },
+    { "name": "Group Policy Creator Owners", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "High", "notes": "Can create GPOs linked to OUs" },
+    { "name": "Enterprise Key Admins", "riskWeight": 5, "tier": "Domain", "difficultyDefault": "High", "notes": "2016+ — BitLocker recovery keys" },
+    { "name": "Key Admins", "riskWeight": 5, "tier": "Domain", "difficultyDefault": "High", "notes": "2016+ — domain key management" },
+    { "name": "DnsAdmins", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "Medium", "notes": "Integrated DNS — known persistence vector" },
+    { "name": "Cert Publishers", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "Medium", "notes": "Enterprise CA publication" },
+    { "name": "Account Operators", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "Medium", "notes": "Create/manage non-privileged accounts" },
+    { "name": "Server Operators", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "Medium", "notes": "Member server management" },
+    { "name": "Backup Operators", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "Medium", "notes": "Backup/restore — SAM/NTDS read on DCs" },
+    { "name": "Print Operators", "riskWeight": 3, "tier": "Domain", "difficultyDefault": "Low", "notes": "Print drivers and spooler" },
+    { "name": "Incoming Forest Trust Builders", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "High", "notes": "Forest trust creation" },
+    { "name": "Windows Authorization Access Group", "riskWeight": 3, "tier": "Builtin", "difficultyDefault": "Medium", "notes": "Access to User Account token" },
+    { "name": "Exchange Windows Permissions", "riskWeight": 5, "tier": "Domain", "difficultyDefault": "High", "optional": true, "notes": "Present with on-premises Exchange" },
+    { "name": "Exchange Trusted Subsystem", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "High", "optional": true, "notes": "On-premises Exchange" },
+    { "name": "Organization Management", "riskWeight": 4, "tier": "Domain", "difficultyDefault": "High", "optional": true, "notes": "Exchange / hybrid M365" },
+    { "name": "Hyper-V Administrators", "riskWeight": 3, "tier": "Builtin", "difficultyDefault": "Medium", "notes": "Builtin — Hyper-V hosts" },
+    { "name": "Remote Desktop Users", "riskWeight": 2, "tier": "Builtin", "difficultyDefault": "Low", "notes": "RDP on servers (sensitive on DCs)" },
+    { "name": "Remote Management Users", "riskWeight": 3, "tier": "Builtin", "difficultyDefault": "Medium", "notes": "Remote WinRM" },
+    { "name": "Cryptographic Operators", "riskWeight": 3, "tier": "Builtin", "difficultyDefault": "Medium", "notes": "Cryptographic operations on objects" },
+    { "name": "Storage Replica Administrators", "riskWeight": 3, "tier": "Domain", "difficultyDefault": "Medium", "optional": true, "notes": "2016+ Storage Replica" },
+    { "name": "Domain Controllers", "riskWeight": 0, "tier": "Domain", "difficultyDefault": "Low", "excludeExpectedMembers": true, "notes": "DC members expected — zero score for DC computer accounts" },
+    { "name": "Read-only Domain Controllers", "riskWeight": 1, "tier": "Domain", "difficultyDefault": "Low", "excludeExpectedMembers": true, "notes": "RODC members expected" },
+    { "name": "Protected Users", "riskWeight": 0, "tier": "Domain", "difficultyDefault": "Low", "notes": "Hardening — membership reduces attack surface; still monitor" },
+    { "name": "DnsUpdateProxy", "riskWeight": 2, "tier": "Domain", "difficultyDefault": "Low", "optional": true, "notes": "Secure dynamic DNS updates" },
+    { "name": "Allowed RODC Password Replication Group", "riskWeight": 3, "tier": "Domain", "difficultyDefault": "Medium", "notes": "Credentials replicated to RODC" },
+    { "name": "Denied RODC Password Replication Group", "riskWeight": 0, "tier": "Domain", "difficultyDefault": "Low", "notes": "Deny group — monitoring only" }
+  ],
+  "wellKnownRids": {
+    "Domain Admins": 512,
+    "Domain Users": 513,
+    "Domain Computers": 515,
+    "Domain Controllers": 516,
+    "Cert Publishers": 517,
+    "Schema Admins": 518,
+    "Enterprise Admins": 519,
+    "Group Policy Creator Owners": 520,
+    "Read-only Domain Controllers": 521,
+    "Cloneable Domain Controllers": 522,
+    "Protected Users": 525,
+    "Key Admins": 526,
+    "Enterprise Key Admins": 527,
+    "Account Operators": 548,
+    "Server Operators": 549,
+    "Print Operators": 550,
+    "Backup Operators": 551
+  },
+  "excludedAccounts": [
+    "krbtgt",
+    "Guest",
+    "DefaultAccount",
+    "WDAGUtilityAccount",
+    "ENTERPRISE DOMAIN CONTROLLERS",
+    "NT AUTHORITY\\ENTERPRISE DOMAIN CONTROLLERS"
+  ],
+  "excludedSids": [
+    "S-1-5-9"
+  ],
+  "excludedSamAccountNamePatterns": [
+    "^MSOL_",
+    "^AAD_",
+    "^S-1-5-21"
+  ]
+}

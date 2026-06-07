@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <title>AD Posture - Timeline</title>
+  <link rel="stylesheet" href="styles-v2.css" />
+</head>
+<body data-page="timeline.html">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">AD</div>
+        <div>
+          <div class="sb-logo-text">AD Posture</div>
+          <div class="sb-logo-ver">Blue Team</div>
+        </div>
+      </div>
+      <div class="sb-domain">
+        <div class="sb-domain-dot"></div>
+        <div>
+          <div class="sb-domain-name" id="sb-domain">-</div>
+          <div class="sb-domain-sub" id="sb-lastrun">Last run: -</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section-label">Posture</div>
+      <a class="sb-item" href="objects.html"><span class="sb-icon">ADO</span><span>AD Objects</span></a>
+      <a class="sb-item" href="adcs.html"><span class="sb-icon">CA</span><span>ADCS</span></a>
+      <a class="sb-item" href="auth.html"><span class="sb-icon">KRB</span><span>Kerberos</span></a>
+      <a class="sb-item" href="trusts.html"><span class="sb-icon">TR</span><span>Trusts</span></a>
+      <a class="sb-item" href="dns.html"><span class="sb-icon">DNS</span><span>DNS</span></a>
+      <a class="sb-item" href="gpo.html"><span class="sb-icon">GPO</span><span>GPO</span></a>
+      <a class="sb-item" href="acl.html"><span class="sb-icon">ACL</span><span>ACL</span></a>
+      <div class="sb-section-label">Remediate</div>
+      <a class="sb-item" href="index.html"><span class="sb-icon">FIX</span><span>Action Plan</span></a>
+      <a class="sb-item" href="exceptions.html"><span class="sb-icon">EXC</span><span>Exceptions</span></a>
+      <div class="sb-section-label">Analysis</div>
+      <a class="sb-item active" aria-current="page" href="timeline.html"><span class="sb-icon">TIM</span><span>Timeline</span></a>
+      <div class="sb-section-label">Reporting</div>
+      <a class="sb-item" href="executive.html"><span class="sb-icon">RPT</span><span>Executive</span></a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-footer-label">Score target</div>
+      <div class="sb-footer-val ok" id="sb-target">0.00</div>
+      <div class="sb-footer-label">Progress toward zero</div>
+      <div class="sb-progress-bar"><div class="sb-progress-fill" id="sb-progress" style="width:0%"></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left"><span class="page-title">Timeline</span><span class="topbar-sep">/</span><span class="topbar-sub">Snapshot comparison / score delta over time</span></div>
+      <div class="topbar-right"><label class="btn-icon">Import report<input type="file" id="timeline-file" accept=".json" style="display:none" /></label></div>
+    </header>
+    <main class="content">
+      <div class="alert" id="timeline-hint">Loading comparison...</div>
+          <div class="security-banner">Sensitive AD posture data: timeline files reveal remediation progress, added exposure, and privileged membership history.</div>
+
+          <div id="timeline-empty" class="empty-state" style="margin-bottom:1rem">
+            <strong>No comparison data loaded.</strong>
+            Timeline is refreshed automatically after the second successful audit.
+            You can also load an existing <code>timeline-comparison.json</code>
+            using the file picker above.
+          </div>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <div>
+                <h2>Delta summary</h2>
+                <p class="sub" id="timeline-delta-summary" style="margin:0">Load a comparison to summarize changes.</p>
+              </div>
+            </div>
+            <nav class="toolbar timeline-jump" aria-label="Timeline result sections">
+              <a class="btn-icon" href="#timeline-added">Added</a>
+              <a class="btn-icon" href="#timeline-removed">Removed</a>
+              <a class="btn-icon" href="#timeline-changed">Score changes</a>
+              <a class="btn-icon" href="#timeline-acl-added">New ACL</a>
+              <a class="btn-icon" href="#timeline-acl-removed">Removed ACL</a>
+            </nav>
+          </section>
+
+          <section class="grid">
+            <div class="card"><h3>Previous score</h3><div class="value" id="score-before">-</div></div>
+            <div class="card"><h3>Current score</h3><div class="value" id="score-after">-</div></div>
+            <div class="card"><h3>Delta change</h3><div class="value" id="score-delta">-</div></div>
+            <div class="card"><h3>Members added</h3><div class="value" id="added-count">-</div></div>
+            <div class="card"><h3>Members removed</h3><div class="value" id="removed-count">-</div></div>
+            <div class="card"><h3>Risk scores changed</h3><div class="value" id="changed-count">-</div></div>
+            <div class="card"><h3>New ACL findings</h3><div class="value" id="acl-added-count">-</div></div>
+            <div class="card"><h3>New critical / high ACL</h3><div class="value" id="acl-new-high-count">-</div></div>
+            <div class="card"><h3>Removed ACL findings</h3><div class="value" id="acl-removed-count">-</div></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title-row">
+              <div>
+                <h2>Exposure trend</h2>
+                <p class="sub" id="timeline-summary" style="margin:0">Score movement across captured audits.</p>
+              </div>
+            </div>
+            <div class="trend-bars" id="history-chart"></div>
+          </section>
+
+          <section class="panel" id="timeline-added">
+            <h2>Added since baseline</h2>
+            <div class="table-scroll compact-table-scroll">
+              <table id="added-table" class="timeline-table"><thead><tr><th class="sortable">Status</th><th class="sortable">Group</th><th class="sortable">Member</th><th class="sortable">Chain</th><th class="sortable">Score</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+          <section class="panel" id="timeline-removed">
+            <h2>Removed (remediated)</h2>
+            <div class="table-scroll compact-table-scroll">
+              <table id="removed-table" class="timeline-table"><thead><tr><th class="sortable">Status</th><th class="sortable">Group</th><th class="sortable">Member</th><th class="sortable">Chain</th><th class="sortable">Score</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+          <section class="panel" id="timeline-changed">
+            <h2>Risk score changes</h2>
+            <div class="table-scroll compact-table-scroll">
+              <table id="changed-table" class="timeline-table timeline-table-changed"><thead><tr><th class="sortable">Group</th><th class="sortable">Member</th><th class="sortable">Score</th><th class="sortable">Chain</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+          <section class="panel" id="timeline-acl-added">
+            <h2>New ACL findings</h2>
+            <div class="table-scroll compact-table-scroll">
+              <table id="acl-added-table" class="timeline-table"><thead><tr><th class="sortable">Status</th><th class="sortable">Right</th><th class="sortable">Trustee</th><th class="sortable">Target</th><th class="sortable">Score</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+          <section class="panel" id="timeline-acl-removed">
+            <h2>Removed ACL findings</h2>
+            <div class="table-scroll compact-table-scroll">
+              <table id="acl-removed-table" class="timeline-table"><thead><tr><th class="sortable">Status</th><th class="sortable">Right</th><th class="sortable">Trustee</th><th class="sortable">Target</th><th class="sortable">Score</th></tr></thead><tbody></tbody></table>
+            </div>
+          </section>
+    </main>
+  </div>
+</div>
+  <script src="shared.js"></script>
+  <script src="timeline-data.js"></script>
+  <script src="timeline.js"></script>
+  <script src="table-tools.js"></script>
+</body>
+</html>

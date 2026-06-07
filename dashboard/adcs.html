@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <title>AD Posture - ADCS Posture</title>
+  <link rel="stylesheet" href="styles-v2.css" />
+</head>
+<body data-page="adcs.html">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">AD</div>
+        <div>
+          <div class="sb-logo-text">AD Posture</div>
+          <div class="sb-logo-ver">Blue Team</div>
+        </div>
+      </div>
+      <div class="sb-domain">
+        <div class="sb-domain-dot"></div>
+        <div>
+          <div class="sb-domain-name" id="sb-domain">-</div>
+          <div class="sb-domain-sub" id="sb-lastrun">Last run: -</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section-label">Posture</div>
+      <a class="sb-item" href="objects.html"><span class="sb-icon">ADO</span><span>AD Objects</span></a>
+      <a class="sb-item active" aria-current="page" href="adcs.html"><span class="sb-icon">CA</span><span>ADCS</span></a>
+      <a class="sb-item" href="auth.html"><span class="sb-icon">KRB</span><span>Kerberos</span></a>
+      <a class="sb-item" href="trusts.html"><span class="sb-icon">TR</span><span>Trusts</span></a>
+      <a class="sb-item" href="dns.html"><span class="sb-icon">DNS</span><span>DNS</span></a>
+      <a class="sb-item" href="gpo.html"><span class="sb-icon">GPO</span><span>GPO</span></a>
+      <a class="sb-item" href="acl.html"><span class="sb-icon">ACL</span><span>ACL</span></a>
+      <div class="sb-section-label">Remediate</div>
+      <a class="sb-item" href="index.html"><span class="sb-icon">FIX</span><span>Action Plan</span></a>
+      <a class="sb-item" href="exceptions.html"><span class="sb-icon">EXC</span><span>Exceptions</span></a>
+      <div class="sb-section-label">Analysis</div>
+      <a class="sb-item" href="timeline.html"><span class="sb-icon">TIM</span><span>Timeline</span></a>
+      <div class="sb-section-label">Reporting</div>
+      <a class="sb-item" href="executive.html"><span class="sb-icon">RPT</span><span>Executive</span></a>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-footer-label">Score target</div>
+      <div class="sb-footer-val ok" id="sb-target">0.00</div>
+      <div class="sb-footer-label">Progress toward zero</div>
+      <div class="sb-progress-bar"><div class="sb-progress-fill" id="sb-progress" style="width:0%"></div></div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left"><span class="page-title">ADCS</span><span class="topbar-sep">/</span><span class="topbar-sub">Certificate templates / enrollment / issuance gates / template control</span></div>
+      <div class="topbar-right"><label class="btn-icon">Import report<input type="file" id="adcs-file" accept=".json" style="display:none" /></label></div>
+    </header>
+    <main class="content">
+      <div class="alert" id="adcs-hint">Loading audit report...</div>
+      <div class="security-banner">Sensitive AD posture data: ADCS findings may expose certificate templates, enrollment principals, CA objects, NTAuth trust, DNs, and PKI control paths.</div>
+
+      <div class="toolbar adcs-toolbar">
+        <input type="search" id="adcs-search" placeholder="Search template, principal, EKU, finding type, reason..." />
+        <select id="adcs-type"><option value="">All finding types</option></select>
+        <select id="adcs-pattern"><option value="">All risk patterns</option></select>
+        <select id="adcs-severity"><option value="">All severities</option></select>
+        <select id="adcs-tag"><option value="">All tags</option></select>
+        <select id="adcs-principal"><option value="">All principals</option></select>
+        <button type="button" id="adcs-clear" class="btn-clear-filters" aria-label="Clear all ADCS filters">Clear filters</button>
+      </div>
+
+      <section class="grid">
+        <div class="card"><h3>ADCS findings</h3><div class="value" id="adcs-count">-</div></div>
+        <div class="card"><h3>Critical / high</h3><div class="value" id="adcs-critical">-</div></div>
+        <div class="card"><h3>ESC1-like</h3><div class="value" id="adcs-esc1">-</div></div>
+        <div class="card"><h3>Enrollment agent</h3><div class="value" id="adcs-agent">-</div></div>
+        <div class="card"><h3>Exportable keys</h3><div class="value" id="adcs-exportable">-</div></div>
+        <div class="card"><h3>PKI control</h3><div class="value" id="adcs-control">-</div></div>
+        <div class="card"><h3>Templates</h3><div class="value" id="adcs-templates">-</div></div>
+        <div class="card"><h3>CAs</h3><div class="value" id="adcs-cas">-</div></div>
+      </section>
+
+      <section class="panel focus-panel">
+        <div class="panel-title-row">
+          <div>
+            <h2>ADCS queue</h2>
+            <p class="sub" style="margin:0">Review risky templates, published CAs, NTAuth trust, issuance guardrails, and remediation.</p>
+          </div>
+          <div class="insight-summary" id="adcs-summary">-</div>
+        </div>
+        <div class="table-scroll adcs-table-scroll">
+          <table id="adcs-table" class="adcs-table">
+            <thead>
+              <tr>
+                <th class="sortable sorted-desc" data-sort="RiskScore">Score</th>
+                <th class="sortable" data-sort="Severity">Severity</th>
+                <th class="sortable" data-sort="FindingType">Type</th>
+                <th class="sortable" data-sort="TemplateName">Template</th>
+                <th>Published CA / target</th>
+                <th class="sortable" data-sort="Principal">Principal</th>
+                <th>Issuance gates</th>
+                <th>Tags</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel object-profile" id="adcs-profile">
+        <div class="panel-title-row">
+          <div>
+            <h2 id="adcs-profile-title">ADCS finding</h2>
+            <p class="sub" id="adcs-profile-subtitle" style="margin:0">Select a row from the queue.</p>
+          </div>
+          <div class="readiness-meter" id="adcs-profile-score">-</div>
+        </div>
+        <div id="adcs-profile-body" class="empty-state">No ADCS finding selected.</div>
+      </section>
+    </main>
+  </div>
+</div>
+  <script src="bootstrap.js"></script>
+  <script src="shared.js"></script>
+  <script src="adcs.js"></script>
+  <script src="table-tools.js"></script>
+</body>
+</html>
+
+
+
