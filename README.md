@@ -43,45 +43,89 @@ AD Posture complements Microsoft Defender for Identity (MDI), SIEM, GRC, and EDR
 
 ### Operations
 
+Operations is the analyst landing page for the Action Plan, readiness summary, exposure score, and prioritized remediation queue.
+
+Details: [Dashboards](#dashboards), [Operations walkthrough](docs/OPERATIONS-WALKTHROUGH.md), [Safe operator flow](docs/OPERATIONS-WALKTHROUGH.md#safe-operator-flow)
+
 ![Operations dashboard](docs/assets/operations-dashboard.png)
 
 ### Objects
+
+Object Risk consolidates identity, group, computer, GPO, OU, and posture evidence into object-level profiles with relationships and remediation context.
+
+Details: [Object Risk Explorer](#object-risk-explorer), [Object Risk docs](docs/OBJECT-RISK-EXPLORER.md), [Delivered posture domains](docs/ROADMAP.md#delivered-posture-domains)
 
 ![Objects dashboard](docs/assets/objects-dashboard.png)
 
 ### Auth / Kerberos
 
+Kerberos/Auth posture highlights roastable principals, weak encryption, delegation exposure, RBCD, and privileged accounts that are still delegable.
+
+Details: [Dashboards](#dashboards), [Kerberos/Auth current state](docs/CURRENT_STATE.md#kerberosauth-posture-state), [Kerberos/Auth roadmap](docs/ROADMAP.md#kerberosauth-posture)
+
 ![Auth dashboard](docs/assets/auth-dashboard.png)
 
 ### ACL Posture
+
+ACL posture reviews dangerous rights, unexpected owners, effective trustees, inheritance, drift, and target context across sensitive AD objects and optional scan scopes.
+
+Details: [Dashboards](#dashboards), [ACL current state](docs/CURRENT_STATE.md#acl-posture-state), [ACL roadmap](docs/ROADMAP.md#acl-posture)
 
 ![ACL dashboard](docs/assets/acl-dashboard.png)
 
 ### GPO Posture
 
+GPO posture connects policy container, link, SYSVOL, script, preference, filtering, loopback, WMI, and delegated-control evidence to scope-aware findings.
+
+Details: [Dashboards](#dashboards), [GPO current state](docs/CURRENT_STATE.md#gpo-posture-state), [GPO roadmap](docs/ROADMAP.md#gpo-posture)
+
 ![GPO dashboard](docs/assets/gpo-dashboard.png)
 
 ### ADCS Posture
+
+ADCS posture surfaces risky certificate templates, issuing CA exposure, NTAuth/template control paths, broad enrollment, request-SAN chains, and ESC-style attack paths.
+
+Details: [Dashboards](#dashboards), [ADCS current state](docs/CURRENT_STATE.md#adcs-posture-state), [ADCS roadmap](docs/ROADMAP.md#adcs-posture)
 
 ![ADCS dashboard](docs/assets/adcs-dashboard.png)
 
 ### Trusts
 
+Trust posture reviews external and forest trust blast radius, SID filtering, selective authentication, transitivity, TGT delegation, and stale trust governance.
+
+Details: [Dashboards](#dashboards), [Trust dashboard page](#dashboards), [Trust roadmap](docs/ROADMAP.md#trusts)
+
 ![Trust dashboard](docs/assets/trust-dashboard.png)
 
 ### DNS
+
+DNS posture reviews AD-integrated zones, parsed records, insecure dynamic updates, stale or dangling records, wildcard exposure, DnsAdmins, and DNS ACL delegation.
+
+Details: [Dashboards](#dashboards), [DNS validation flow](#safe-operation-from-a-management-server), [DNS roadmap](docs/ROADMAP.md#dns)
 
 ![DNS dashboard](docs/assets/dns-dashboard.png)
 
 ### Executive
 
+Executive reporting gives CIO/CISO-ready exposure narrative, collection coverage, top actions, exceptions, framework mappings, and meeting-safe export context.
+
+Details: [Dashboards](#dashboards), [Governance and reporting roadmap](docs/ROADMAP.md#delivered-governance-and-reporting), [Operations walkthrough](docs/OPERATIONS-WALKTHROUGH.md)
+
 ![Executive dashboard](docs/assets/executive-dashboard.png)
 
 ### Exceptions
 
+Exceptions separate accepted business exposure from the fix queue with owners, approvers, tickets, reasons, expiry, and missing-governance indicators.
+
+Details: [Approved Exceptions](#approved-exceptions), [Governed remediation](docs/GOVERNED-REMEDIATION.md), [Operations walkthrough](docs/OPERATIONS-WALKTHROUGH.md)
+
 ![Exceptions dashboard](docs/assets/exceptions-dashboard.png)
 
 ### Timeline
+
+Timeline compares snapshots so teams can review score movement, new or removed findings, membership changes, and drift over time.
+
+Details: [Dashboards](#dashboards), [Outputs](#outputs), [Operations walkthrough](docs/OPERATIONS-WALKTHROUGH.md)
 
 ![Timeline dashboard](docs/assets/timeline-dashboard.png)
 

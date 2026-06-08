@@ -279,6 +279,8 @@ GPO filters:
 - `scopeTier`
 - `trustee`
 
+## ADCS Posture State
+
 ADCS posture is opt-in through:
 
 ```powershell
