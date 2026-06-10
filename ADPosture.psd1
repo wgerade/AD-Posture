@@ -22,8 +22,30 @@
     RequiredModules   = @()
     PrivateData       = @{
         PSData = @{
-            Tags       = @('ActiveDirectory', 'Security', 'Audit', 'Tiering', 'Pester')
+            Tags       = @(
+                'ActiveDirectory',
+                'ADSecurity',
+                'IdentitySecurity',
+                'Cybersecurity',
+                'BlueTeam',
+                'PowerShell',
+                'Audit',
+                'SecurityAssessment',
+                'PostureManagement',
+                'PrivilegeAudit',
+                'Tier0',
+                'Tiering',
+                'Kerberos',
+                'ADCS',
+                'GPO',
+                'ACL',
+                'DNS',
+                'Trusts',
+                'MITREATTACK',
+                'Pester'
+            )
             LicenseUri = 'https://polyformproject.org/licenses/noncommercial/1.0.0/'
+            ProjectUri = 'https://github.com/wgerade/AD-Posture'
         }
     }
 }
