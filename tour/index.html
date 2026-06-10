@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive guided tour for AD Posture, a local Active Directory posture and privilege audit toolkit.">
+  <title>AD Posture Guided Tour</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <section id="welcome-screen" class="welcome-screen" aria-labelledby="welcome-title">
+      <div class="welcome-grid">
+        <div class="welcome-copy">
+          <div class="eyebrow">Interactive lab experience</div>
+          <h1 id="welcome-title">AD Posture Guided Tour</h1>
+          <p>
+            Explore a simulated enterprise dashboard for Active Directory posture, privilege exposure,
+            Tier 0 risk, delegated control, Kerberos hygiene, ACL posture, and remediation planning.
+          </p>
+          <div class="hero-actions">
+            <label for="visitor-name">Your name for the completion certificate</label>
+            <div class="name-entry">
+              <input id="visitor-name" type="text" autocomplete="name" placeholder="Example: William Gerade">
+              <button id="enter-platform" type="button">Enter tour</button>
+            </div>
+          </div>
+          <div class="trust-row" aria-label="Tour highlights">
+            <span>Local AD evidence</span>
+            <span>Risk scoring</span>
+            <span>Executive reporting</span>
+          </div>
+        </div>
+        <div class="hero-panel" aria-hidden="true">
+          <div class="panel-header">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="terminal-card">
+            <p>$ Invoke-ADPostureAssessment -Scope Enterprise</p>
+            <p class="ok">Collecting sensitive group posture...</p>
+            <p class="ok">Resolving nested privilege chains...</p>
+            <p class="warn">Critical Tier 0 exposure detected: 12 findings</p>
+            <p class="ok">Dashboard bundle generated successfully.</p>
+          </div>
+          <div class="score-orb">
+            <strong>84</strong>
+            <span>Posture Score</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main id="platform" class="platform hidden">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand" data-tour="brand">
+          <div class="brand-mark">AD</div>
+          <div>
+            <strong>AD Posture</strong>
+            <span>Security Assessment</span>
+          </div>
+        </div>
+        <nav>
+          <a class="active" href="#overview" data-section="overview">Overview</a>
+          <a href="#privileged" data-section="privileged">Privileged Groups</a>
+          <a href="#delegation" data-section="delegation">Delegation</a>
+          <a href="#acl" data-section="acl">ACL Posture</a>
+          <a href="#kerberos" data-section="kerberos">Kerberos / Auth</a>
+          <a href="#remediation" data-section="remediation">Remediation</a>
+          <a href="#reports" data-section="reports">Reports</a>
+        </nav>
+        <div class="sidebar-card">
+          <span>Assessment Mode</span>
+          <strong>Simulated dataset</strong>
+          <small>No production data is collected in this tour.</small>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="kicker">Enterprise Identity Security</p>
+            <h2 id="page-title">Active Directory Posture Dashboard</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="start-tour" type="button" class="secondary">Start guided tour</button>
+            <button id="open-certificate" type="button" class="primary">Certificate</button>
+          </div>
+        </header>
+
+        <section id="overview" class="dashboard-section active-section">
+          <div class="metrics-grid" data-tour="metrics">
+            <article class="metric-card critical">
+              <span>Critical Findings</span>
+              <strong>12</strong>
+              <small>Tier 0 exposure and delegation risks</small>
+            </article>
+            <article class="metric-card warning">
+              <span>Privileged Objects</span>
+              <strong>146</strong>
+              <small>Users, groups, computers, and service accounts</small>
+            </article>
+            <article class="metric-card success">
+              <span>Remediation Impact</span>
+              <strong>63%</strong>
+              <small>Risk reduction from top five fixes</small>
+            </article>
+            <article class="metric-card neutral">
+              <span>Evidence Bundle</span>
+              <strong>Ready</strong>
+              <small>CSV, JSON, and local dashboard package</small>
+            </article>
+          </div>
+
+          <div class="content-grid two-columns">
+            <article class="card chart-card" data-tour="score">
+              <div class="card-heading">
+                <div>
+                  <span class="kicker">Cumulative Risk</span>
+                  <h3>Exposure score by domain</h3>
+                </div>
+                <span class="pill danger">High</span>
+              </div>
+              <div class="bar-list">
+                <div><span>Privileged nesting</span><strong style="width: 88%"></strong><em>88</em></div>
+                <div><span>Delegation</span><strong style="width: 74%"></strong><em>74</em></div>
+                <div><span>ACL ownership</span><strong style="width: 68%"></strong><em>68</em></div>
+                <div><span>Kerberos hygiene</span><strong style="width: 57%"></strong><em>57</em></div>
+                <div><span>Stale identities</span><strong style="width: 45%"></strong><em>45</em></div>
+              </div>
+            </article>
+
+            <article class="card" data-tour="action-plan">
+              <div class="card-heading">
+                <div>
+                  <span class="kicker">Prioritized Action Plan</span>
+                  <h3>Recommended next moves</h3>
+                </div>
+              </div>
+              <ol class="action-list">
+                <li><strong>Remove direct Tier 0 membership</strong><span>9 accounts can move to controlled break-glass or JIT process.</span></li>
+                <li><strong>Review unconstrained delegation</strong><span>4 servers should be migrated to constrained delegation or isolated.</span></li>
+                <li><strong>Expire stale admin approvals</strong><span>11 exceptions are missing current business justification.</span></li>
+                <li><strong>Correct AdminSDHolder inheritance drift</strong><span>Unexpected ACEs found on protected object templates.</span></li>
+              </ol>
+            </article>
+          </div>
+        </section>
+
+        <section id="privileged" class="dashboard-section">
+          <article class="card full-card" data-tour="privileged-table">
+            <div class="card-heading">
+              <div>
+                <span class="kicker">Privileged Group Exposure</span>
+                <h3>Nested access chains and Tier classification</h3>
+              </div>
+              <span class="pill warning">Needs review</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Group</th><th>Tier</th><th>Members</th><th>Nested Paths</th><th>Risk</th><th>Recommended Action</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Domain Admins</td><td>Tier 0</td><td>8</td><td>3</td><td><span class="risk high">High</span></td><td>Remove standing access</td></tr>
+                  <tr><td>Enterprise Admins</td><td>Tier 0</td><td>2</td><td>1</td><td><span class="risk high">High</span></td><td>Require approval evidence</td></tr>
+                  <tr><td>Backup Operators</td><td>Tier 0</td><td>14</td><td>5</td><td><span class="risk medium">Medium</span></td><td>Validate operational need</td></tr>
+                  <tr><td>Exchange Organization Management</td><td>Tier 1</td><td>11</td><td>2</td><td><span class="risk medium">Medium</span></td><td>Split admin roles</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section id="delegation" class="dashboard-section">
+          <div class="content-grid two-columns">
+            <article class="card">
+              <span class="kicker">Delegation Risk</span>
+              <h3>Kerberos delegation posture</h3>
+              <div class="donut-card" aria-label="Delegation risk chart">
+                <div class="donut">74%</div>
+                <div>
+                  <p><strong>4</strong> unconstrained delegation systems</p>
+                  <p><strong>7</strong> constrained delegation entries pending owner review</p>
+                  <p><strong>3</strong> RBCD paths impacting privileged servers</p>
+                </div>
+              </div>
+            </article>
+            <article class="card">
+              <span class="kicker">Attack Path Context</span>
+              <h3>Why this matters</h3>
+              <p class="body-copy">
+                Delegation configuration can allow credential relay or service impersonation paths.
+                AD Posture highlights the affected object, owner, privilege boundary, and remediation owner.
+              </p>
+              <button class="inline-button" data-jump="remediation">View remediation queue</button>
+            </article>
+          </div>
+        </section>
+
+        <section id="acl" class="dashboard-section">
+          <article class="card full-card">
+            <div class="card-heading">
+              <div>
+                <span class="kicker">ACL Posture</span>
+                <h3>Dangerous rights and unexpected owners</h3>
+              </div>
+            </div>
+            <div class="acl-grid">
+              <div><strong>GenericAll</strong><span>6 findings</span></div>
+              <div><strong>WriteDacl</strong><span>9 findings</span></div>
+              <div><strong>WriteOwner</strong><span>3 findings</span></div>
+              <div><strong>ResetPassword</strong><span>18 findings</span></div>
+            </div>
+          </article>
+        </section>
+
+        <section id="kerberos" class="dashboard-section">
+          <div class="content-grid two-columns">
+            <article class="card">
+              <span class="kicker">Authentication Hygiene</span>
+              <h3>Kerberos and UAC indicators</h3>
+              <ul class="check-list">
+                <li><span></span> Pre-authentication disabled: 5 principals</li>
+                <li><span></span> Weak encryption enabled: 13 principals</li>
+                <li><span></span> Password never expires: 22 accounts</li>
+                <li><span></span> Delegable privileged accounts: 4 accounts</li>
+              </ul>
+            </article>
+            <article class="card">
+              <span class="kicker">MITRE Mapping</span>
+              <h3>Technique context</h3>
+              <div class="mitre-tags">
+                <span>T1558</span><span>T1550</span><span>T1098</span><span>T1003</span><span>T1484</span>
+              </div>
+              <p class="body-copy">Each finding links posture evidence to a likely privilege exposure or credential-access pattern.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="remediation" class="dashboard-section">
+          <article class="card full-card">
+            <div class="card-heading">
+              <div>
+                <span class="kicker">Remediation Planning</span>
+                <h3>Owner-driven work queue</h3>
+              </div>
+              <span class="pill success">63% projected reduction</span>
+            </div>
+            <div class="timeline">
+              <div><span>1</span><strong>Validate business owners</strong><p>Assign accountability for privileged groups, service accounts, and delegated systems.</p></div>
+              <div><span>2</span><strong>Remove unnecessary standing access</strong><p>Replace permanent privileged membership with approved elevation workflows.</p></div>
+              <div><span>3</span><strong>Correct high-risk ACLs</strong><p>Reset ownership and dangerous ACEs on sensitive groups and domain control points.</p></div>
+              <div><span>4</span><strong>Re-run assessment</strong><p>Generate evidence bundle for leadership, audit, and engineering teams.</p></div>
+            </div>
+          </article>
+        </section>
+
+        <section id="reports" class="dashboard-section">
+          <div class="content-grid two-columns">
+            <article class="card" data-tour="reports">
+              <span class="kicker">Executive Dashboard</span>
+              <h3>Leadership-ready evidence</h3>
+              <p class="body-copy">Translate technical AD posture into risk reduction, remediation ownership, trend analysis, and audit evidence.</p>
+              <button id="complete-tour" class="primary" type="button">Complete tour</button>
+            </article>
+            <article class="card">
+              <span class="kicker">Export Bundle</span>
+              <h3>Static local report package</h3>
+              <div class="export-list">
+                <span>adposture-findings.csv</span>
+                <span>adposture-evidence.json</span>
+                <span>executive-dashboard.html</span>
+                <span>remediation-plan.csv</span>
+              </div>
+            </article>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="tour-overlay" class="tour-overlay hidden" aria-hidden="true"></div>
+  <div id="tour-card" class="tour-card hidden" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+    <span id="tour-progress" class="tour-progress"></span>
+    <h3 id="tour-title"></h3>
+    <p id="tour-text"></p>
+    <div class="tour-actions">
+      <button id="tour-skip" type="button" class="ghost">Skip</button>
+      <button id="tour-prev" type="button" class="secondary">Back</button>
+      <button id="tour-next" type="button" class="primary">Next</button>
+    </div>
+  </div>
+
+  <div id="certificate-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="certificate-title">
+    <div class="modal-content">
+      <button id="close-certificate" class="modal-close" type="button" aria-label="Close certificate">×</button>
+      <div id="certificate-preview" class="certificate-preview">
+        <span>Certificate of Completion</span>
+        <h3 id="certificate-name">Participant</h3>
+        <p>has completed the AD Posture Guided Tour covering privileged access, Tier 0 exposure, delegation, ACL posture, Kerberos hygiene, remediation planning, and executive reporting.</p>
+        <strong>AD Posture Interactive Lab</strong>
+      </div>
+      <div class="modal-actions">
+        <button id="download-certificate" class="primary" type="button">Download PNG</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
