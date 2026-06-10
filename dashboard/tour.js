@@ -13,7 +13,6 @@
     'adcs.html': 'ADCS',
     'auth.html': 'Kerberos',
     'trusts.html': 'Trusts',
-    'trust.html': 'Trusts',
     'dns.html': 'DNS',
     'gpo.html': 'GPO',
     'acl.html': 'ACL',
@@ -22,39 +21,75 @@
     'executive.html': 'Executive'
   };
 
-  const pageNarrative = {
-    'index.html': 'Action Plan is the operator landing page: score, readiness, filters, remediation batches, accounts, groups, access paths, and safe scripts.',
-    'objects.html': 'AD Objects consolidates identities, groups, computers, GPOs, OUs, and posture evidence into object-level profiles.',
-    'adcs.html': 'ADCS reviews certificate templates, published CAs, enrollment exposure, control delegation, and ESC-style attack paths.',
-    'auth.html': 'Kerberos highlights roastable principals, weak encryption, delegation exposure, and privileged service accounts.',
-    'trusts.html': 'Trusts reviews cross-boundary relationships, SID filtering, selective authentication, trust direction, and trust type.',
-    'trust.html': 'Trusts reviews cross-boundary relationships, SID filtering, selective authentication, trust direction, and trust type.',
-    'dns.html': 'DNS reviews zone configuration, dynamic updates, wildcard records, stale records, and control-path risk.',
-    'gpo.html': 'GPO reviews policy delegation, SYSVOL evidence, preference exposure, scripts, links, scope, and WMI filter dependencies.',
-    'acl.html': 'ACL reviews dangerous ACEs, unexpected owners, inheritance, drift, effective trustees, and sensitive targets.',
-    'exceptions.html': 'Exceptions separates accepted risk from active remediation with owner, approver, ticket, reason, and expiry context.',
-    'timeline.html': 'Timeline compares snapshots so teams can explain score movement, new exposure, remediated findings, and changed risk.',
-    'executive.html': 'Executive converts technical posture evidence into a leadership-ready risk and remediation summary.'
-  };
-
-  const manualSteps = {
+  const curatedSteps = {
     'index.html': [
-      ['.score-hero', 'Exposure score', 'Current cumulative AD posture score, target score, domain, progress toward zero, and the first recommended fix.'],
-      ['.kpi-grid', 'Action Plan KPIs', 'Readiness, actionable findings, tier exposure, exceptions, and report timing from the loaded dataset.'],
-      ['.topbar-tabs', 'Action Plan tabs', 'The existing tabs expose Fix now, Insights, Readiness, Accounts, Groups, and Paths in the real dashboard.'],
-      ['#actions-panel', 'Fix now', 'Batches remediation actions by score reduction and review surface.'],
-      ['#insights-panel', 'Insights', 'Visual summary of tiering, effort, account mix, and top groups by exposure.'],
-      ['#readiness-panel', 'Readiness scorecard', 'Control-oriented status for remediation planning.'],
-      ['#accounts-panel', 'Account exposure', 'Identities ranked by repeated appearance across sensitive paths.'],
-      ['#groups-panel', 'Group exposure', 'Sensitive groups ranked by aggregate exposure.'],
-      ['#members-panel', 'Access paths', 'Operational findings with score, member, group, tier, chain, reason, fix, and details.'],
-      ['#playbooks-panel', 'Safe playbooks', 'Cross-domain remediation queue for sensitive group, ACL, GPO, ADCS, DNS, and related findings.'],
-      ['#script-panel', 'Remediation script', 'Review-ready PowerShell output for deterministic changes, with unsafe or ambiguous cases blocked.']
+      ['.content', 'Action Plan overview', 'This is the main remediation workspace. It summarizes exposure, prioritizes fixes, and links operational findings to safe remediation actions.'],
+      ['.score-hero', 'Exposure score and first fix', 'Start here to understand the current score, the target, and the highest-priority action to reduce exposure.'],
+      ['.kpi-grid', 'Executive posture indicators', 'These cards summarize readiness, actionable findings, tier exposure, and exception status.'],
+      ['.topbar-tabs', 'Action Plan sections', 'Use these tabs to move between fix batches, insight charts, readiness, accounts, groups, and access paths.'],
+      ['#actions-panel', 'Fix now queue', 'Grouped remediation moves are sorted by score reduction so the operator can act on the highest-impact fixes first.'],
+      ['#readiness-panel', 'Readiness scorecard', 'This translates technical findings into control status for remediation planning and stakeholder reporting.'],
+      ['#accounts-panel', 'Account exposure', 'This view ranks identities that appear across multiple sensitive paths.'],
+      ['#groups-panel', 'Group exposure', 'This view identifies which sensitive groups are driving the largest aggregate exposure.'],
+      ['#members-panel', 'Access paths', 'This is the detailed operational queue with member, group, tier, chain, reason, difficulty, and remediation context.'],
+      ['#playbooks-panel', 'Safe playbooks', 'This centralizes remediation work across sensitive groups, ACL, GPO, ADCS, DNS, and related findings.']
     ],
     'objects.html': [
-      ['.grid', 'Object metrics', 'Object count, critical/high objects, Tier 0 objects, evidence rows, relationships, and highest score.'],
-      ['#objects-table', 'AD object queue', 'Object-level risk queue sorted by cumulative score.'],
-      ['#object-profile', 'Object profile', 'Selected-object evidence, relationships, tags, and remediation context.']
+      ['.content', 'AD Objects overview', 'This page consolidates object-level exposure across users, groups, computers, GPOs, OUs, and related evidence.'],
+      ['.grid', 'Object metrics', 'These cards show the number of objects, critical/high exposure, Tier 0 scope, evidence rows, relationships, and highest score.'],
+      ['#objects-table', 'Object risk queue', 'Objects are ranked by cumulative risk so investigation can start with the identities and resources that matter most.'],
+      ['#object-profile', 'Object profile', 'Selecting an object opens its evidence, relationships, tags, and remediation context.']
+    ],
+    'adcs.html': [
+      ['.content', 'ADCS overview', 'This page reviews certificate services posture, including risky templates, CA exposure, enrollment risk, and control delegation.'],
+      ['.grid', 'ADCS metrics', 'These cards summarize certificate template and CA exposure using the loaded synthetic or imported data.'],
+      ['table', 'ADCS findings', 'Findings highlight certificate template escalation paths, authentication EKUs, enrollment permissions, and recommended remediation.']
+    ],
+    'auth.html': [
+      ['.content', 'Kerberos overview', 'This page focuses on Kerberos and authentication exposure for service accounts and privileged identities.'],
+      ['.grid', 'Kerberos metrics', 'These cards summarize roastable principals, weak encryption, delegation exposure, and privileged service-account risk.'],
+      ['table', 'Kerberos findings', 'Findings include principal context, delegation type, SPNs, encryption exposure, score, reason, and remediation guidance.']
+    ],
+    'trusts.html': [
+      ['.content', 'Trusts overview', 'This page reviews cross-boundary exposure between domains or forests.'],
+      ['.grid', 'Trust metrics', 'These cards summarize trust direction, type, filtering, authentication controls, and boundary risk.'],
+      ['table', 'Trust findings', 'Findings highlight SID filtering, selective authentication, bidirectional paths, and remediation guidance.']
+    ],
+    'dns.html': [
+      ['.content', 'DNS overview', 'This page reviews DNS posture and control paths that can affect internal routing and discovery.'],
+      ['.grid', 'DNS metrics', 'These cards summarize insecure dynamic updates, wildcard records, stale records, and zone-level exposure.'],
+      ['table', 'DNS findings', 'Findings include zone, record, parsed evidence, principal, risk reason, and remediation guidance.']
+    ],
+    'gpo.html': [
+      ['.content', 'GPO overview', 'This page reviews policy control paths that can affect privileged computers and users.'],
+      ['.grid', 'GPO metrics', 'These cards summarize GPO delegation, credential exposure, scripts, links, scope, and WMI filter dependencies.'],
+      ['table', 'GPO findings', 'Findings show policy name, scope, delegated right, severity, reason, score formula, and remediation.']
+    ],
+    'acl.html': [
+      ['.content', 'ACL overview', 'This page reviews dangerous permissions, unexpected owners, inheritance, and sensitive object control paths.'],
+      ['.grid', 'ACL metrics', 'These cards summarize ACL exposure by severity, target, trustee, ownership, and remediation surface.'],
+      ['table', 'ACL findings', 'Findings show trustee, target, right, inheritance, reason, score, and remediation guidance.']
+    ],
+    'exceptions.html': [
+      ['.content', 'Exceptions overview', 'This page separates accepted risk from normal remediation so exceptions remain governed, visible, and time-bound.'],
+      ['.grid', 'Exception metrics', 'These cards show active exceptions, expired exceptions, expiring exceptions, accepted exposure, missing governance, and review target.'],
+      ['#exceptions-review-table', 'Approved exceptions table', 'Each exception includes status, scope, finding, score, owner, approver, ticket, expiry, and reason.']
+    ],
+    'timeline.html': [
+      ['.content', 'Timeline overview', 'This page compares posture snapshots to show whether remediation is reducing exposure over time.'],
+      ['#timeline-delta-summary', 'Delta summary', 'This explains the score movement between the previous and current assessment.'],
+      ['.grid', 'Timeline metrics', 'These cards show previous score, current score, delta, added members, removed members, changed scores, and ACL movement.'],
+      ['#history-chart', 'Exposure trend', 'The trend view shows score movement across captured audits.'],
+      ['#timeline-added', 'Added since baseline', 'Newly introduced exposure appears here for investigation.'],
+      ['#timeline-removed', 'Removed findings', 'Remediated items appear here to show progress.'],
+      ['#timeline-changed', 'Risk score changes', 'Changed findings show where exposure increased or decreased without being fully added or removed.']
+    ],
+    'executive.html': [
+      ['.content', 'Executive overview', 'This page converts technical AD posture evidence into a leadership-ready risk and remediation summary.'],
+      ['.grid', 'Executive indicators', 'These cards summarize score, readiness, finding count, exceptions, and remediation priority for quick reporting.'],
+      ['#exec-actions-table', 'Top remediation moves', 'This table groups the highest-impact remediation actions for leadership and planning conversations.'],
+      ['#exec-top-groups', 'Top groups by exposure', 'This ranking shows which groups contribute most to the current exposure picture.'],
+      ['.executive-methodology', 'Interpretation', 'This section clarifies that the score is an internal prioritization index, not a certification or external benchmark.']
     ]
   };
 
@@ -70,7 +105,7 @@
     style.textContent = `
       .tour-start-button{margin-left:.5rem;border:1px solid var(--border,#2b3b55);background:var(--surface-2,#142033);color:var(--text,#e5eefb);border-radius:999px;padding:.55rem .8rem;font-weight:700;cursor:pointer}
       .tour-start-button:hover{filter:brightness(1.12)}
-      .tour-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.50);z-index:9990;pointer-events:none}
+      .tour-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.46);z-index:9990;pointer-events:none}
       .tour-focus{position:relative;z-index:9992;outline:3px solid #38bdf8;outline-offset:4px;box-shadow:0 0 0 8px rgba(56,189,248,.18)!important;border-radius:10px}
       .tour-card{position:fixed;z-index:9993;width:min(430px,calc(100vw - 28px));max-height:min(360px,calc(100vh - 28px));overflow:auto;border:1px solid rgba(56,189,248,.45);background:var(--surface,#0b1220);color:var(--text,#e5eefb);border-radius:16px;padding:14px 16px;box-shadow:0 20px 70px rgba(0,0,0,.42);transition:top .18s ease,left .18s ease,opacity .12s ease}
       .tour-card[data-placement="right"]{border-left:4px solid #38bdf8}.tour-card[data-placement="left"]{border-right:4px solid #38bdf8}.tour-card[data-placement="bottom"]{border-top:4px solid #38bdf8}.tour-card[data-placement="top"]{border-bottom:4px solid #38bdf8}
@@ -92,81 +127,8 @@
     container.prepend(button);
   }
 
-  function commonSteps() {
-    return [
-      ['.sidebar', 'Navigation shell', 'This is the existing AD Posture dashboard navigation. The tour is only a walkthrough layer; it does not replace the current HTML.'],
-      ['.sb-domain', 'Dataset context', 'Shows the domain, last run timestamp, score target, and progress context from the loaded report data.'],
-      ['.topbar', 'Current screen controls', 'The real topbar stays available for imports, filters, tabs, theme switching, and page-specific actions.'],
-      ['.security-banner', 'Local data warning', 'The dashboard can contain sensitive AD evidence such as DNs, SIDs, privileged paths, ownership, and remediation intent.']
-    ];
-  }
-
-  function dynamicContentSteps() {
-    const steps = [];
-    const seen = new Set();
-    const candidates = Array.from(document.querySelectorAll('.grid, .kpi-grid, .score-hero, .toolbar, .topbar-tabs, section.panel, .focus-panel, table, .object-profile'));
-
-    candidates.forEach((element, index) => {
-      if (!element || !isUseful(element) || seen.has(element)) return;
-      seen.add(element);
-      if (!element.id) element.dataset.tourAutoId = element.dataset.tourAutoId || `auto-${index}`;
-      const selector = element.id ? `#${cssEscape(element.id)}` : `[data-tour-auto-id="${element.dataset.tourAutoId}"]`;
-      steps.push([selector, titleFor(element), textFor(element, titleFor(element))]);
-    });
-
-    return steps;
-  }
-
   function stepsForCurrentPage() {
-    const first = [
-      ['.content', pageLabels[page] || 'Dashboard screen', pageNarrative[page] || 'This screen is part of the existing AD Posture dashboard and is included in the guided tour.']
-    ];
-    const merged = first.concat(commonSteps(), manualSteps[page] || [], dynamicContentSteps());
-    return dedupeSteps(merged).filter(step => getTarget(step[0]));
-  }
-
-  function dedupeSteps(steps) {
-    const used = new Set();
-    return steps.filter(step => {
-      const target = getTarget(step[0]);
-      if (!target) return false;
-      const key = target.id || target.dataset.tourAutoId || step[0];
-      if (used.has(key)) return false;
-      used.add(key);
-      return true;
-    });
-  }
-
-  function isUseful(element) {
-    if (element.hidden) return false;
-    if (element.offsetParent === null && element.tagName !== 'TABLE') return false;
-    const text = (element.textContent || '').trim();
-    return text.length > 0 || element.querySelector('tbody, input, select, button');
-  }
-
-  function titleFor(element) {
-    const heading = element.querySelector('h1,h2,h3,.page-title,.kpi-label,.score-kpi-label');
-    if (heading?.textContent?.trim()) return heading.textContent.trim();
-    if (element.matches('table')) return 'Data table';
-    if (element.matches('.toolbar')) return 'Filters';
-    if (element.matches('.topbar-tabs')) return 'Tabs';
-    if (element.matches('.grid,.kpi-grid')) return 'Summary cards';
-    if (element.matches('.score-hero')) return 'Exposure summary';
-    return pageLabels[page] || 'Dashboard content';
-  }
-
-  function textFor(element, title) {
-    const sub = element.querySelector('.sub,p');
-    if (sub?.textContent?.trim()) return sub.textContent.trim();
-    if (element.matches('table')) return `This table is part of the ${pageLabels[page] || 'current'} screen and displays the loaded fake/demo or imported report data.`;
-    if (element.matches('.toolbar')) return 'These filters are native to the current screen and change the real table content, not a separate tour copy.';
-    if (element.matches('.grid,.kpi-grid')) return `These cards summarize the loaded ${pageLabels[page] || 'dashboard'} dataset.`;
-    return `${title} is an existing element of the real ${pageLabels[page] || 'dashboard'} screen.`;
-  }
-
-  function cssEscape(value) {
-    if (window.CSS?.escape) return CSS.escape(value);
-    return String(value).replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+    return (curatedSteps[page] || curatedSteps['index.html']).filter(step => getTarget(step[0]));
   }
 
   function getTarget(selector) {
