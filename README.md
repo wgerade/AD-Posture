@@ -37,6 +37,12 @@ AD Posture complements Microsoft Defender for Identity (MDI), SIEM, GRC, and EDR
 
 ## Demo
 
+Explore the dashboard with synthetic `corp.example` data — no installation required.
+
+**[→ Launch Interactive Demo Tour](https://wgerade.github.io/AD-Posture/dashboard/index.html)**
+
+The tour walks through Operations, Objects, Auth/Kerberos, ACL, GPO, ADCS, Trusts, DNS, Executive, Exceptions, and Timeline views using a sanitized AD snapshot.
+
 ![Demo](docs/assets/demo.gif)
 
 ## Screenshots
