@@ -587,6 +587,11 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the current module boundari
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for delivered v1 scope and explicitly deferred work.
 
+## Discovery and Keywords
+
+See [docs/DISCOVERY.md](docs/DISCOVERY.md) for search keywords, use cases, audience, and related hashtags.
+
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
