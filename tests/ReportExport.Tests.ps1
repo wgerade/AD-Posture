@@ -1,19 +1,22 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
-. (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardData.ps1')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureGovernanceMetadata.ps1')
-. (Join-Path $repoRoot 'src\Private\New-ADPosturePostureSummary.ps1')
-. (Join-Path $repoRoot 'src\Private\Update-ADPostureSnapshotV12.ps1')
-. (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardDataPayloadV12.ps1')
-. (Join-Path $repoRoot 'src\Public\Export-ADPostureReport.ps1')
-. (Join-Path $repoRoot 'src\Public\New-ADPostureRemediationPlaybook.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
+    . (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardData.ps1')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureGovernanceMetadata.ps1')
+    . (Join-Path $repoRoot 'src\Private\New-ADPosturePostureSummary.ps1')
+    . (Join-Path $repoRoot 'src\Private\Update-ADPostureSnapshotV12.ps1')
+    . (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardDataPayloadV12.ps1')
+    . (Join-Path $repoRoot 'src\Public\Export-ADPostureReport.ps1')
+    . (Join-Path $repoRoot 'src\Public\New-ADPostureRemediationPlaybook.ps1')
 
-function Get-ModuleConfig {
-    [pscustomobject]@{
-        ReportPath = Join-Path $TestDrive 'reports'
-        DashboardPath = Join-Path $TestDrive 'dashboard'
-        DataPath = Join-Path $TestDrive 'data'
+    function Get-ModuleConfig {
+        [pscustomobject]@{
+            ReportPath = Join-Path $TestDrive 'reports'
+            DashboardPath = Join-Path $TestDrive 'dashboard'
+            DataPath = Join-Path $TestDrive 'data'
+        }
     }
+
 }
 
 Describe 'Report export' {
@@ -75,18 +78,18 @@ Describe 'Report export' {
         Export-ADPostureReport -Snapshot $snapshot -OutputBasePath $base
 
         $effectiveRows = Import-Csv -LiteralPath "$base-acl-effective-trustees.csv"
-        @($effectiveRows).Count | Should Be 2
-        $effectiveRows[0].AclFindingId | Should Be 'acl-000001'
-        $effectiveRows[0].EffectiveTrusteeName | Should Be 'user1'
-        $effectiveRows[1].EffectiveTrusteeName | Should Be 'user2'
+        @($effectiveRows).Count | Should -Be 2
+        $effectiveRows[0].AclFindingId | Should -Be 'acl-000001'
+        $effectiveRows[0].EffectiveTrusteeName | Should -Be 'user1'
+        $effectiveRows[1].EffectiveTrusteeName | Should -Be 'user2'
 
         $dashboard = Get-Content -LiteralPath "$base-dashboard.json" -Raw | ConvertFrom-Json
-        $dashboard.aclFindings[0].EffectiveTrusteeCount | Should Be 2
-        @($dashboard.aclFindings[0].EffectiveTrusteesSample).Count | Should Be 2
-        $dashboard.aclFindings[0].PSObject.Properties['EffectiveTrustees'] | Should BeNullOrEmpty
-        $snapshot.SchemaVersion | Should Be '1.3'
-        @($snapshot.PostureSummary).Count | Should Be 8
-        $dashboard.meta.schemaVersion | Should Be '1.3'
-        @($dashboard.postureSummary).Count | Should Be 8
+        $dashboard.aclFindings[0].EffectiveTrusteeCount | Should -Be 2
+        @($dashboard.aclFindings[0].EffectiveTrusteesSample).Count | Should -Be 2
+        $dashboard.aclFindings[0].PSObject.Properties['EffectiveTrustees'] | Should -BeNullOrEmpty
+        $snapshot.SchemaVersion | Should -Be '1.3'
+        @($snapshot.PostureSummary).Count | Should -Be 8
+        $dashboard.meta.schemaVersion | Should -Be '1.3'
+        @($dashboard.postureSummary).Count | Should -Be 8
     }
 }

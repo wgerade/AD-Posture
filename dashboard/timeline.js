@@ -63,6 +63,14 @@ function applyTimeline(data) {
 }
 
 async function loadTimeline() {
+  try {
+    return await resolveTimelineData();
+  } finally {
+    window.ADPostureDashboard?.hideLoadingOverlay?.();
+  }
+}
+
+async function resolveTimelineData() {
   if (window.__AD_TIMELINE_DATA__) {
     return window.__AD_TIMELINE_DATA__;
   }
@@ -71,6 +79,16 @@ async function loadTimeline() {
       const r = await fetch(u);
       if (r.ok) return r.json();
     } catch (_) {}
+  }
+  if (window.__AD_DEMO_TIMELINE_DATA__) {
+    window.__AD_POSTURE_DEMO__ = true;
+    try { document.dispatchEvent(new CustomEvent('adposture:demo')); } catch (_) {}
+    const banner = document.createElement('div');
+    banner.className = 'security-banner demo-data-banner';
+    banner.dataset.demoBanner = 'true';
+    banner.textContent = 'Synthetic demo data (corp.example). No timeline comparison was found - run at least two audits to see real history.';
+    document.body.prepend(banner);
+    return window.__AD_DEMO_TIMELINE_DATA__;
   }
   return null;
 }

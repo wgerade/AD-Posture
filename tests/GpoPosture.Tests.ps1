@@ -1,5 +1,8 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureGpoPosture.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureGpoPosture.ps1')
+
+}
 
 Describe 'GPO posture model' {
     It 'parses GPO links with disabled and enforced flags' {
@@ -9,10 +12,10 @@ Describe 'GPO posture model' {
             -ScopeDistinguishedName 'OU=Tier0,DC=contoso,DC=local' `
             -ScopeObjectClass 'organizationalUnit'
 
-        @($links).Count | Should Be 1
-        $links[0].IsLinkDisabled | Should Be $true
-        $links[0].IsEnforced | Should Be $true
-        $links[0].ScopeName | Should Be 'Tier0'
+        @($links).Count | Should -Be 1
+        $links[0].IsLinkDisabled | Should -Be $true
+        $links[0].IsEnforced | Should -Be $true
+        $links[0].ScopeName | Should -Be 'Tier0'
     }
 
     It 'keeps hygiene/link metadata out of the risk queue while still reporting risky GPO integrity paths' {
@@ -67,12 +70,12 @@ Describe 'GPO posture model' {
 
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links
 
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoUnusualSysvolPath').Count | Should Be 1
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoEnforcedLink').Count | Should Be 0
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoAllSettingsDisabled').Count | Should Be 0
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoScriptSettings').Count | Should Be 0
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoDisabledLink').Count | Should Be 0
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoOrphanedLink').Count | Should Be 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoUnusualSysvolPath').Count | Should -Be 1
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoEnforcedLink').Count | Should -Be 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoAllSettingsDisabled').Count | Should -Be 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoScriptSettings').Count | Should -Be 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoDisabledLink').Count | Should -Be 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoOrphanedLink').Count | Should -Be 0
     }
 
     It 'reports external script paths without querying ACLs outside SYSVOL' {
@@ -111,11 +114,11 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links -IncludeSysvolAcl
         $external = @($model.GpoFindings | Where-Object FindingType -eq 'GpoExternalScriptPath')
 
-        @($external).Count | Should Be 1
-        $external[0].FileSystemPath | Should Be '\\fileserver01\deploy\startup.ps1'
-        $external[0].ScopeTier | Should Be 'Tier 0'
-        $external[0].Tags -contains 'ExternalAclNotQueried' | Should Be $true
-        @($model.GpoFindings | Where-Object FindingType -like 'GpoExternalScriptAcl*').Count | Should Be 0
+        @($external).Count | Should -Be 1
+        $external[0].FileSystemPath | Should -Be '\\fileserver01\deploy\startup.ps1'
+        $external[0].ScopeTier | Should -Be 'Tier 0'
+        $external[0].Tags -contains 'ExternalAclNotQueried' | Should -Be $true
+        @($model.GpoFindings | Where-Object FindingType -like 'GpoExternalScriptAcl*').Count | Should -Be 0
     }
 
     It 'reports configured drive-letter PowerShell script paths as external execution dependencies' {
@@ -154,9 +157,9 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links -IncludeSysvolAcl
         $external = @($model.GpoFindings | Where-Object FindingType -eq 'GpoExternalScriptPath')
 
-        @($external).Count | Should Be 1
-        $external[0].FileSystemPath | Should Be 'Z:\Projects\New-ADPostureLabAccounts.ps1'
-        $external[0].Reason | Should Match 'does not connect to external file paths'
+        @($external).Count | Should -Be 1
+        $external[0].FileSystemPath | Should -Be 'Z:\Projects\New-ADPostureLabAccounts.ps1'
+        $external[0].Reason | Should -Match 'does not connect to external file paths'
     }
 
     It 'reports forward-slash drive-letter script paths as external execution dependencies' {
@@ -195,8 +198,8 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links -IncludeSysvolAcl
         $external = @($model.GpoFindings | Where-Object FindingType -eq 'GpoExternalScriptPath')
 
-        @($external).Count | Should Be 1
-        $external[0].FileSystemPath | Should Be 'Z:/Projects/New-ADPostureLabAccounts.ps1'
+        @($external).Count | Should -Be 1
+        $external[0].FileSystemPath | Should -Be 'Z:/Projects/New-ADPostureLabAccounts.ps1'
     }
 
     It 'reports script metadata that cannot be parsed instead of staying silent' {
@@ -229,8 +232,8 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links -IncludeSysvolAcl
         $unparsed = @($model.GpoFindings | Where-Object FindingType -eq 'GpoScriptMetadataUnparsed')
 
-        @($unparsed).Count | Should Be 1
-        $unparsed[0].Reason | Should Match 'no configured script path could be extracted'
+        @($unparsed).Count | Should -Be 1
+        $unparsed[0].Reason | Should -Match 'no configured script path could be extracted'
     }
 
     It 'reports weak ACLs on configured GPO script files and folders in SYSVOL' {
@@ -283,12 +286,12 @@ Describe 'GPO posture model' {
         $folderFindings = @($model.GpoFindings | Where-Object FindingType -eq 'GpoScriptFolderAclWeak')
         $configured = @($model.GpoFindings | Where-Object FindingType -eq 'GpoConfiguredScript')
 
-        @($fileFindings).Count | Should BeGreaterThan 0
-        @($folderFindings).Count | Should BeGreaterThan 0
-        @($configured).Count | Should Be 0
-        $fileFindings[0].FileSystemPath | Should Be $scriptFile
-        $folderFindings[0].FileSystemPath | Should Be $scripts
-        $fileFindings[0].Tags -contains 'ExecutionPath' | Should Be $true
+        @($fileFindings).Count | Should -BeGreaterThan 0
+        @($folderFindings).Count | Should -BeGreaterThan 0
+        @($configured).Count | Should -Be 0
+        $fileFindings[0].FileSystemPath | Should -Be $scriptFile
+        $folderFindings[0].FileSystemPath | Should -Be $scripts
+        $fileFindings[0].Tags -contains 'ExecutionPath' | Should -Be $true
     }
 
     It 'resolves classic Scripts.ini entries into Startup and Shutdown subfolders' {
@@ -337,9 +340,9 @@ Describe 'GPO posture model' {
         $configured = @($model.GpoFindings | Where-Object FindingType -eq 'GpoConfiguredScript')
         $fileFindings = @($model.GpoFindings | Where-Object FindingType -eq 'GpoScriptFileAclWeak')
 
-        @($configured).Count | Should Be 0
-        @($fileFindings).Count | Should BeGreaterThan 0
-        $fileFindings[0].FileSystemPath | Should Be $scriptFile
+        @($configured).Count | Should -Be 0
+        @($fileFindings).Count | Should -BeGreaterThan 0
+        $fileFindings[0].FileSystemPath | Should -Be $scriptFile
     }
 
     It 'discovers scripts from standard GPO script folders when metadata parsing is unavailable' {
@@ -382,9 +385,9 @@ Describe 'GPO posture model' {
         $configured = @($model.GpoFindings | Where-Object FindingType -eq 'GpoConfiguredScript')
         $fileFindings = @($model.GpoFindings | Where-Object FindingType -eq 'GpoScriptFileAclWeak')
 
-        @($configured).Count | Should Be 0
-        @($fileFindings).Count | Should BeGreaterThan 0
-        $fileFindings[0].FileSystemPath | Should Be $scriptFile
+        @($configured).Count | Should -Be 0
+        @($fileFindings).Count | Should -BeGreaterThan 0
+        $fileFindings[0].FileSystemPath | Should -Be $scriptFile
     }
 
     It 'reports broad security filtering only on critical or infrastructure scopes' {
@@ -415,9 +418,9 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links
         $filterFindings = @($model.GpoFindings | Where-Object FindingType -eq 'GpoBroadSecurityFiltering')
 
-        @($filterFindings).Count | Should Be 1
-        $filterFindings[0].TrusteeName | Should Be 'Everyone'
-        $filterFindings[0].ScopeTier | Should Be 'Tier 0'
+        @($filterFindings).Count | Should -Be 1
+        $filterFindings[0].TrusteeName | Should -Be 'Everyone'
+        $filterFindings[0].ScopeTier | Should -Be 'Tier 0'
     }
 
     It 'reports risky security options from GptTmpl.inf' {
@@ -463,12 +466,12 @@ Describe 'GPO posture model' {
         $securityOption = @($model.GpoFindings | Where-Object { $_.FindingType -eq 'GpoRiskySecurityOption' -and $_.DelegatedRight -eq 'EnableLUA' })
         $anonymousOption = @($model.GpoFindings | Where-Object { $_.FindingType -eq 'GpoRiskySecurityOption' -and $_.DelegatedRight -eq 'EveryoneIncludesAnonymous' })
 
-        @($userRight).Count | Should Be 1
-        @($impersonateRight).Count | Should Be 1
-        @($securityOption).Count | Should Be 1
-        @($anonymousOption).Count | Should Be 1
-        $userRight[0].FileSystemPath | Should Be $templatePath
-        $securityOption[0].ScopeTier | Should Be 'Tier 0'
+        @($userRight).Count | Should -Be 1
+        @($impersonateRight).Count | Should -Be 1
+        @($securityOption).Count | Should -Be 1
+        @($anonymousOption).Count | Should -Be 1
+        $userRight[0].FileSystemPath | Should -Be $templatePath
+        $securityOption[0].ScopeTier | Should -Be 'Tier 0'
     }
 
     It 'reports WMI filter dependencies on critical or infrastructure scopes' {
@@ -499,9 +502,9 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links
         $wmi = @($model.GpoFindings | Where-Object FindingType -eq 'GpoWmiFilterDependency')
 
-        @($wmi).Count | Should Be 1
-        $wmi[0].ScopeTier | Should Be 'Tier 0'
-        $wmi[0].Reason | Should Match 'depends on WMI filter'
+        @($wmi).Count | Should -Be 1
+        $wmi[0].ScopeTier | Should -Be 'Tier 0'
+        $wmi[0].Reason | Should -Match 'depends on WMI filter'
     }
 
     It 'reports loopback processing on critical or infrastructure scopes' {
@@ -535,9 +538,9 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links -IncludeSysvolAcl
         $loopback = @($model.GpoFindings | Where-Object FindingType -eq 'GpoLoopbackProcessing')
 
-        @($loopback).Count | Should Be 1
-        $loopback[0].DelegatedRight | Should Be 'LoopbackReplace'
-        $loopback[0].ScopeTier | Should Be 'Tier 1'
+        @($loopback).Count | Should -Be 1
+        $loopback[0].DelegatedRight | Should -Be 'LoopbackReplace'
+        $loopback[0].ScopeTier | Should -Be 'Tier 1'
     }
 
     It 'reports risky Group Policy Preferences for credentials, local admins, tasks, services, and external paths' {
@@ -575,11 +578,11 @@ Describe 'GPO posture model' {
 
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links -IncludeSysvolAcl
 
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceCredential').Count | Should BeGreaterThan 0
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceLocalAdmin').Count | Should BeGreaterThan 0
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceScheduledTask').Count | Should BeGreaterThan 0
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceServiceControl').Count | Should BeGreaterThan 0
-        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceExternalPath').Count | Should BeGreaterThan 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceCredential').Count | Should -BeGreaterThan 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceLocalAdmin').Count | Should -BeGreaterThan 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceScheduledTask').Count | Should -BeGreaterThan 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceServiceControl').Count | Should -BeGreaterThan 0
+        @($model.GpoFindings | Where-Object FindingType -eq 'GpoPreferenceExternalPath').Count | Should -BeGreaterThan 0
     }
 
     It 'reports risky script content inside SYSVOL scripts' {
@@ -618,10 +621,10 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links -IncludeSysvolAcl
         $scriptFindings = @($model.GpoFindings | Where-Object FindingType -eq 'GpoRiskyScriptContent')
 
-        @($scriptFindings).Count | Should Be 2
-        $scriptFindings[0].FileSystemPath | Should Be $scriptFile
-        @($scriptFindings | Where-Object DelegatedRight -eq 'CredentialLiteral').Count | Should Be 1
-        @($scriptFindings | Where-Object DelegatedRight -eq 'LocalAdminModification').Count | Should Be 1
+        @($scriptFindings).Count | Should -Be 2
+        $scriptFindings[0].FileSystemPath | Should -Be $scriptFile
+        @($scriptFindings | Where-Object DelegatedRight -eq 'CredentialLiteral').Count | Should -Be 1
+        @($scriptFindings | Where-Object DelegatedRight -eq 'LocalAdminModification').Count | Should -Be 1
     }
 
     It 'does not report risky script content for empty SYSVOL scripts' {
@@ -657,7 +660,7 @@ Describe 'GPO posture model' {
         $model = ConvertTo-ADPostureGpoRiskModel -Domain 'contoso.local' -Gpos $gpos -Links $links -IncludeSysvolAcl
         $scriptFindings = @($model.GpoFindings | Where-Object FindingType -eq 'GpoRiskyScriptContent')
 
-        @($scriptFindings).Count | Should Be 0
+        @($scriptFindings).Count | Should -Be 0
     }
 
     It 'correlates GPO ACL delegation with linked scope criticality' {
@@ -713,14 +716,14 @@ Describe 'GPO posture model' {
         $dcFinding = $delegation | Where-Object ScopeName -eq 'Domain Controllers' | Select-Object -First 1
         $labFinding = $delegation | Where-Object ScopeName -eq 'Workstations' | Select-Object -First 1
 
-        @($delegation).Count | Should Be 2
-        $dcFinding.Severity | Should Be 'Critical'
-        $dcFinding.ScopeTier | Should Be 'Tier 0'
-        $dcFinding.Tags -contains 'DomainControllerScope' | Should Be $true
-        $dcFinding.RiskScore | Should BeGreaterThan $labFinding.RiskScore
-        $labFinding.Severity | Should Be 'High'
-        $labFinding.ScopeTier | Should Be 'Tier 2'
-        $labFinding.Tags -contains 'BroadTrustee' | Should Be $true
+        @($delegation).Count | Should -Be 2
+        $dcFinding.Severity | Should -Be 'Critical'
+        $dcFinding.ScopeTier | Should -Be 'Tier 0'
+        $dcFinding.Tags -contains 'DomainControllerScope' | Should -Be $true
+        $dcFinding.RiskScore | Should -BeGreaterThan $labFinding.RiskScore
+        $labFinding.Severity | Should -Be 'High'
+        $labFinding.ScopeTier | Should -Be 'Tier 2'
+        $labFinding.Tags -contains 'BroadTrustee' | Should -Be $true
     }
 
     It 'normalizes synthetic AD GPO objects' {
@@ -737,10 +740,10 @@ Describe 'GPO posture model' {
 
         $normalized = ConvertTo-ADPostureGpoObject -InputObject $gpo
 
-        $normalized.DisplayName | Should Be 'Login Scripts'
-        $normalized.Guid | Should Be '33333333-3333-3333-3333-333333333333'
-        $normalized.Status | Should Be 'UserSettingsDisabled'
-        $normalized.HasScripts | Should Be $true
-        $normalized.WmiFilter | Should Match 'Workstation Filter'
+        $normalized.DisplayName | Should -Be 'Login Scripts'
+        $normalized.Guid | Should -Be '33333333-3333-3333-3333-333333333333'
+        $normalized.Status | Should -Be 'UserSettingsDisabled'
+        $normalized.HasScripts | Should -Be $true
+        $normalized.WmiFilter | Should -Match 'Workstation Filter'
     }
 }

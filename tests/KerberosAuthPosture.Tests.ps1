@@ -1,5 +1,8 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureKerberosAuthPosture.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureKerberosAuthPosture.ps1')
+
+}
 
 Describe 'Kerberos/Auth posture model' {
     It 'does not report AS-REP disabled on an otherwise ordinary account' {
@@ -13,7 +16,7 @@ Describe 'Kerberos/Auth posture model' {
 
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
 
-        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosAsRepRoastableAccount').Count | Should Be 0
+        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosAsRepRoastableAccount').Count | Should -Be 0
     }
 
     It 'reports AS-REP roastable accounts when pre-auth is disabled on a sensitive account' {
@@ -30,9 +33,9 @@ Describe 'Kerberos/Auth posture model' {
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
 
         $finding = $model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosAsRepRoastableAccount' | Select-Object -First 1
-        $finding | Should Not BeNullOrEmpty
-        $finding.RiskPattern | Should Be 'AS-REP Roast'
-        $finding.Tags -contains 'ASREP' | Should Be $true
+        $finding | Should -Not -BeNullOrEmpty
+        $finding.RiskPattern | Should -Be 'AS-REP Roast'
+        $finding.Tags -contains 'ASREP' | Should -Be $true
     }
 
     It 'reports Kerberoastable service principals and weak no-AES posture' {
@@ -48,8 +51,8 @@ Describe 'Kerberos/Auth posture model' {
 
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
 
-        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosRoastableServiceAccount').Count | Should Be 1
-        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosRc4OnlyOrNoAes').Count | Should Be 1
+        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosRoastableServiceAccount').Count | Should -Be 1
+        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosRc4OnlyOrNoAes').Count | Should -Be 1
     }
 
     It 'reports DES-only Kerberos encryption' {
@@ -66,8 +69,8 @@ Describe 'Kerberos/Auth posture model' {
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
 
         $finding = $model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosDesOnlyAccount' | Select-Object -First 1
-        $finding | Should Not BeNullOrEmpty
-        $finding.Tags -contains 'DES' | Should Be $true
+        $finding | Should -Not -BeNullOrEmpty
+        $finding.Tags -contains 'DES' | Should -Be $true
     }
 
     It 'reports unconstrained, constrained, and resource-based constrained delegation' {
@@ -84,9 +87,9 @@ Describe 'Kerberos/Auth posture model' {
 
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
 
-        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosUnconstrainedDelegation').Count | Should Be 1
-        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosConstrainedDelegation').Count | Should Be 1
-        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosResourceBasedConstrainedDelegation').Count | Should Be 1
+        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosUnconstrainedDelegation').Count | Should -Be 1
+        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosConstrainedDelegation').Count | Should -Be 1
+        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosResourceBasedConstrainedDelegation').Count | Should -Be 1
     }
 
     It 'handles RBCD ActiveDirectorySecurity values from live AD without method invocation errors' {
@@ -102,7 +105,7 @@ Describe 'Kerberos/Auth posture model' {
 
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
 
-        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosResourceBasedConstrainedDelegation').Count | Should Be 1
+        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosResourceBasedConstrainedDelegation').Count | Should -Be 1
     }
 
     It 'flattens live AD Kerberos principals before snapshot and dashboard serialization' {
@@ -120,11 +123,11 @@ Describe 'Kerberos/Auth posture model' {
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
         $row = @($model.KerberosAuthPrincipals)[0]
 
-        $row.HasResourceBasedConstrainedDelegation | Should Be $true
-        $row.ResourceBasedConstrainedDelegationValueTypes -contains 'System.DirectoryServices.ActiveDirectorySecurity' | Should Be $true
-        $row.PSObject.Properties['msDS-AllowedToActOnBehalfOfOtherIdentity'] | Should BeNullOrEmpty
-        $row.PSObject.Properties['ResourceBasedConstrainedDelegation'] | Should BeNullOrEmpty
-        { $model | ConvertTo-Json -Depth 12 } | Should Not Throw
+        $row.HasResourceBasedConstrainedDelegation | Should -Be $true
+        $row.ResourceBasedConstrainedDelegationValueTypes -contains 'System.DirectoryServices.ActiveDirectorySecurity' | Should -Be $true
+        $row.PSObject.Properties['msDS-AllowedToActOnBehalfOfOtherIdentity'] | Should -BeNullOrEmpty
+        $row.PSObject.Properties['ResourceBasedConstrainedDelegation'] | Should -BeNullOrEmpty
+        { $model | ConvertTo-Json -Depth 12 } | Should -Not -Throw
     }
 
     It 'reports privileged accounts without delegation protection' {
@@ -141,8 +144,8 @@ Describe 'Kerberos/Auth posture model' {
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
 
         $finding = $model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosSensitiveAccountDelegable' | Select-Object -First 1
-        $finding | Should Not BeNullOrEmpty
-        $finding.PrivilegeTier | Should Be 'Tier 0'
+        $finding | Should -Not -BeNullOrEmpty
+        $finding.PrivilegeTier | Should -Be 'Tier 0'
     }
 
     It 'treats Protected Users membership as privileged delegation protection evidence' {
@@ -161,10 +164,10 @@ Describe 'Kerberos/Auth posture model' {
 
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal)
 
-        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosSensitiveAccountDelegable').Count | Should Be 0
+        @($model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosSensitiveAccountDelegable').Count | Should -Be 0
         $snapshot = @($model.KerberosAuthPrincipals)[0]
-        $snapshot.IsProtectedUsersMember | Should Be $true
-        $snapshot.DelegationProtectionMethod | Should Be 'ProtectedUsers'
+        $snapshot.IsProtectedUsersMember | Should -Be $true
+        $snapshot.DelegationProtectionMethod | Should -Be 'ProtectedUsers'
     }
 
     It 'reports stale krbtgt password age in Kerberos/Auth posture' {
@@ -180,7 +183,7 @@ Describe 'Kerberos/Auth posture model' {
         $model = ConvertTo-ADPostureKerberosAuthRiskModel -Domain 'contoso.local' -Principals @($principal) -AsOf ([datetime]'2026-06-03') -KrbtgtPasswordAgeDays 180
 
         $finding = $model.KerberosAuthFindings | Where-Object FindingType -eq 'KerberosKrbtgtPasswordStale' | Select-Object -First 1
-        $finding | Should Not BeNullOrEmpty
-        $finding.Tags -contains 'Krbtgt' | Should Be $true
+        $finding | Should -Not -BeNullOrEmpty
+        $finding.Tags -contains 'Krbtgt' | Should -Be $true
     }
 }

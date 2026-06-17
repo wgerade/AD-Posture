@@ -1,7 +1,7 @@
 function Compare-ADPostureSnapshots {
     <#
     .SYNOPSIS
-    Compares two snapshots for timeline evolution (timeline dashboard).
+    Compares two snapshots and refreshes the static timeline with all valid history.
     #>
     [CmdletBinding()]
     param(
@@ -178,6 +178,18 @@ function Compare-ADPostureSnapshots {
             @{ timestamp = $current.Timestamp; score = $current.OverallRiskScore; actionable = $current.ActionableCount; aclFindings = @($current.AclFindings).Count; aclNewCriticalHigh = $aclNewCriticalHigh.Count }
         )
     }
+
+    $fullHistory = @(Get-ADPostureTimelineHistoryPoints -DataDirectory $DataDirectory)
+    if ($fullHistory.Count -gt 0) {
+        $timeline | Add-Member -NotePropertyName History -NotePropertyValue $fullHistory -Force
+    }
+
+    $timeline | Add-Member -NotePropertyName Domain -NotePropertyValue $current.Domain -Force
+    $timeline | Add-Member -NotePropertyName Forest -NotePropertyValue $current.Forest -Force
+    $timeline | Add-Member -NotePropertyName TargetScore -NotePropertyValue $current.TargetScore -Force
+    $timeline | Add-Member -NotePropertyName SchemaVersion -NotePropertyValue $current.SchemaVersion -Force
+    $timeline | Add-Member -NotePropertyName BaselineAuditId -NotePropertyValue $baseline.AuditId -Force
+    $timeline | Add-Member -NotePropertyName CurrentAuditId -NotePropertyValue $current.AuditId -Force
 
     Write-ADPostureTimelineDashboardData -TimelineData $timeline
 

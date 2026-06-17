@@ -275,7 +275,10 @@ function Test-ADPostureGpoBroadApplyPrincipal {
 
 function Get-ADPostureGpoSecurityFilterPrincipals {
     [CmdletBinding()]
-    param([string]$DistinguishedName)
+    param(
+        [string]$DistinguishedName,
+        [hashtable]$DomainParams
+    )
 
     if (-not $DistinguishedName) { return @() }
 
@@ -283,10 +286,10 @@ function Get-ADPostureGpoSecurityFilterPrincipals {
     try {
         $security = $null
         try {
-            $security = Get-Acl -LiteralPath "AD:\$DistinguishedName" -ErrorAction Stop
+            $security = Get-Acl -LiteralPath (Get-ADPostureAdAclPath -DistinguishedName $DistinguishedName -DomainParams $DomainParams) -ErrorAction Stop
         }
         catch {
-            $entry = [System.DirectoryServices.DirectoryEntry]::new("LDAP://$DistinguishedName")
+            $entry = [System.DirectoryServices.DirectoryEntry]::new((Get-ADPostureLdapPath -DistinguishedName $DistinguishedName -DomainParams $DomainParams))
             $security = [pscustomobject]@{
                 Access = @($entry.ObjectSecurity.GetAccessRules($true, $true, [System.Security.Principal.NTAccount]))
             }
@@ -1559,7 +1562,7 @@ function Get-ADPostureGpoPosture {
 
     foreach ($gpo in @($gpos)) {
         if (-not $gpo.DistinguishedName) { continue }
-        $filters = @(Get-ADPostureGpoSecurityFilterPrincipals -DistinguishedName $gpo.DistinguishedName)
+        $filters = @(Get-ADPostureGpoSecurityFilterPrincipals -DistinguishedName $gpo.DistinguishedName -DomainParams $queryParams)
         try {
             $gpo | Add-Member -NotePropertyName SecurityFilterPrincipals -NotePropertyValue $filters -Force
         }

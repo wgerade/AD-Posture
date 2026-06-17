@@ -1,6 +1,9 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Resolve-ADPrincipalAccountType.ps1')
-. (Join-Path $repoRoot 'src\Private\Resolve-ADNativeIdentity.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Resolve-ADPrincipalAccountType.ps1')
+    . (Join-Path $repoRoot 'src\Private\Resolve-ADNativeIdentity.ps1')
+
+}
 
 Describe 'AD principal account type resolution' {
     It 'classifies gMSA from objectCategory CN as service account' {
@@ -13,8 +16,8 @@ Describe 'AD principal account type resolution' {
 
         $result = Resolve-ADPrincipalAccountType -Principal $principal
 
-        $result.Kind | Should Be 'GroupManagedServiceAccount'
-        $result.AccountType | Should Be 'ServiceAccount (gMSA)'
+        $result.Kind | Should -Be 'GroupManagedServiceAccount'
+        $result.AccountType | Should -Be 'ServiceAccount (gMSA)'
     }
 
     It 'classifies gMSA from objectClass as service account' {
@@ -27,8 +30,8 @@ Describe 'AD principal account type resolution' {
 
         $result = Resolve-ADPrincipalAccountType -Principal $principal
 
-        $result.Kind | Should Be 'GroupManagedServiceAccount'
-        $result.AccountType | Should Be 'ServiceAccount (gMSA)'
+        $result.Kind | Should -Be 'GroupManagedServiceAccount'
+        $result.AccountType | Should -Be 'ServiceAccount (gMSA)'
     }
 
     It 'classifies sMSA from objectCategory CN as service account' {
@@ -41,8 +44,8 @@ Describe 'AD principal account type resolution' {
 
         $result = Resolve-ADPrincipalAccountType -Principal $principal
 
-        $result.Kind | Should Be 'ManagedServiceAccount'
-        $result.AccountType | Should Be 'ServiceAccount (sMSA)'
+        $result.Kind | Should -Be 'ManagedServiceAccount'
+        $result.AccountType | Should -Be 'ServiceAccount (sMSA)'
     }
 
     It 'marks Enterprise Domain Controllers as native AD authority identity' {
@@ -54,9 +57,9 @@ Describe 'AD principal account type resolution' {
 
         $result = Resolve-ADNativeIdentity -Principal $principal -AccountType 'Unknown'
 
-        $result.IsNativeIdentity | Should Be $true
-        $result.IsRemediableIdentity | Should Be $false
-        $result.NativeIdentityCategory | Should Be 'Native AD authority'
+        $result.IsNativeIdentity | Should -Be $true
+        $result.IsRemediableIdentity | Should -Be $false
+        $result.NativeIdentityCategory | Should -Be 'Native AD authority'
     }
 
     It 'marks built-in domain RID principals as non-remediable native identities' {
@@ -68,8 +71,8 @@ Describe 'AD principal account type resolution' {
 
         $result = Resolve-ADNativeIdentity -Principal $principal -AccountType 'User'
 
-        $result.IsNativeIdentity | Should Be $true
-        $result.IsRemediableIdentity | Should Be $false
-        $result.NativeIdentityCategory | Should Be 'Built-in domain principal'
+        $result.IsNativeIdentity | Should -Be $true
+        $result.IsRemediableIdentity | Should -Be $false
+        $result.NativeIdentityCategory | Should -Be 'Built-in domain principal'
     }
 }

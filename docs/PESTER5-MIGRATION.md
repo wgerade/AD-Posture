@@ -1,6 +1,6 @@
-# Pester 5 Migration Plan
+# Pester 5 Migration
 
-The test suite currently targets Pester 4.10.1 (pinned in `.github/workflows/ci.yml`). `scripts/Invoke-ProjectChecks.ps1` already supports running under Pester 5 when only Pester 5 is installed, but the test files use Pester 3/4 idioms. This document scopes the migration so it can be executed as a single dedicated change instead of being mixed into feature work.
+> **Status: executed in 1.3.0.** All test files were converted to Pester 5 operator syntax with file-level setup wrapped in `BeforeAll`; CI pins Pester 5.7.1 and `scripts/Invoke-ProjectChecks.ps1` requires Pester 5+. The original plan below is kept as the record of scope and rationale.
 
 ## Why migrate
 

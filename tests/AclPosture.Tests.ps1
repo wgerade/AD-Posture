@@ -1,8 +1,11 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\ConvertTo-ADAclRiskModel.ps1')
-. (Join-Path $repoRoot 'src\Private\ConvertTo-ADObjectRiskModel.ps1')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureAclTargets.ps1')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureAclPosture.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\ConvertTo-ADAclRiskModel.ps1')
+    . (Join-Path $repoRoot 'src\Private\ConvertTo-ADObjectRiskModel.ps1')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureAclTargets.ps1')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureAclPosture.ps1')
+
+}
 
 Describe 'ACL posture risk model' {
     It 'normalizes dangerous GenericAll ACEs' {
@@ -23,15 +26,15 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].NormalizedRight | Should Be 'GenericAll'
-        $model.AclFindings[0].RiskScore | Should Be 12.0
-        $model.AclFindings[0].TargetCanonicalName | Should Be 'contoso.local/Users/Domain Admins'
-        $model.AclFindings[0].TargetPrivilegeTier | Should Be 'Tier 0'
-        $model.AclFindings[0].TargetRiskContext | Should Be 'Tier 0 privileged target'
-        $model.AclFindings[0].Tags -contains 'SensitiveAclTrustee' | Should Be $true
-        $model.AclFindings[0].Tags -contains 'SensitiveAclTarget' | Should Be $true
-        $model.AclFindings[0].Tags -contains 'Tier0Exposure' | Should Be $true
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].NormalizedRight | Should -Be 'GenericAll'
+        $model.AclFindings[0].RiskScore | Should -Be 12.0
+        $model.AclFindings[0].TargetCanonicalName | Should -Be 'contoso.local/Users/Domain Admins'
+        $model.AclFindings[0].TargetPrivilegeTier | Should -Be 'Tier 0'
+        $model.AclFindings[0].TargetRiskContext | Should -Be 'Tier 0 privileged target'
+        $model.AclFindings[0].Tags -contains 'SensitiveAclTrustee' | Should -Be $true
+        $model.AclFindings[0].Tags -contains 'SensitiveAclTarget' | Should -Be $true
+        $model.AclFindings[0].Tags -contains 'Tier0Exposure' | Should -Be $true
     }
 
     It 'scores broad ACL findings lower on common objects than Tier 0 targets' {
@@ -49,12 +52,12 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].RiskScore | Should Be 7.2
-        $model.AclFindings[0].Severity | Should Be 'High'
-        $model.AclFindings[0].TargetPrivilegeTier | Should Be 'Tier 2'
-        $model.AclFindings[0].TargetRiskContext | Should Be 'User object'
-        $model.AclFindings[0].Tags -contains 'UserAclTarget' | Should Be $true
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].RiskScore | Should -Be 7.2
+        $model.AclFindings[0].Severity | Should -Be 'High'
+        $model.AclFindings[0].TargetPrivilegeTier | Should -Be 'Tier 2'
+        $model.AclFindings[0].TargetRiskContext | Should -Be 'User object'
+        $model.AclFindings[0].Tags -contains 'UserAclTarget' | Should -Be $true
     }
 
     It 'detects DCSync replication extended rights' {
@@ -72,11 +75,11 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].NormalizedRight | Should Be 'DCSync'
-        $model.AclFindings[0].Severity | Should Be 'Critical'
-        $model.AclFindings[0].Tags -contains 'DCSyncCapable' | Should Be $true
-        $model.AclFindings[0].Tags -contains 'Tier0Exposure' | Should Be $true
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].NormalizedRight | Should -Be 'DCSync'
+        $model.AclFindings[0].Severity | Should -Be 'Critical'
+        $model.AclFindings[0].Tags -contains 'DCSyncCapable' | Should -Be $true
+        $model.AclFindings[0].Tags -contains 'Tier0Exposure' | Should -Be $true
     }
 
     It 'detects all extended rights represented by zero object type' {
@@ -93,8 +96,8 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].NormalizedRight | Should Be 'AllExtendedRights'
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].NormalizedRight | Should -Be 'AllExtendedRights'
     }
 
     It 'detects Windows LAPS extended rights' {
@@ -113,12 +116,12 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].NormalizedRight | Should Be 'WindowsLapsControl'
-        $model.AclFindings[0].Tags -contains 'WindowsLAPS' | Should Be $true
-        $model.AclFindings[0].Tags -contains 'CredentialExposure' | Should Be $true
-        $model.AclFindings[0].ObjectTypeName | Should Be 'ms-LAPS-Encrypted-Password-Attributes'
-        $model.AclFindings[0].Reason | Should Match 'encrypted password attribute control set'
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].NormalizedRight | Should -Be 'WindowsLapsControl'
+        $model.AclFindings[0].Tags -contains 'WindowsLAPS' | Should -Be $true
+        $model.AclFindings[0].Tags -contains 'CredentialExposure' | Should -Be $true
+        $model.AclFindings[0].ObjectTypeName | Should -Be 'ms-LAPS-Encrypted-Password-Attributes'
+        $model.AclFindings[0].Reason | Should -Match 'encrypted password attribute control set'
     }
 
     It 'detects LAPS attribute access resolved from schema names' {
@@ -147,11 +150,11 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 2
-        @($model.AclFindings | Where-Object NormalizedRight -eq 'LegacyLapsControl').Count | Should Be 1
-        @($model.AclFindings | Where-Object NormalizedRight -eq 'WindowsLapsControl').Count | Should Be 1
-        ($model.AclFindings | Where-Object NormalizedRight -eq 'LegacyLapsControl').Reason | Should Match 'clear-text local administrator password'
-        ($model.AclFindings | Where-Object NormalizedRight -eq 'WindowsLapsControl').Reason | Should Match 'Windows LAPS password attribute'
+        @($model.AclFindings).Count | Should -Be 2
+        @($model.AclFindings | Where-Object NormalizedRight -eq 'LegacyLapsControl').Count | Should -Be 1
+        @($model.AclFindings | Where-Object NormalizedRight -eq 'WindowsLapsControl').Count | Should -Be 1
+        ($model.AclFindings | Where-Object NormalizedRight -eq 'LegacyLapsControl').Reason | Should -Match 'clear-text local administrator password'
+        ($model.AclFindings | Where-Object NormalizedRight -eq 'WindowsLapsControl').Reason | Should -Match 'Windows LAPS password attribute'
     }
 
     It 'uses distinct Windows LAPS reasons for different attributes' {
@@ -180,9 +183,9 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 2
-        ($model.AclFindings | Where-Object ObjectTypeName -eq 'msLAPS-EncryptedPassword').Reason | Should Match 'encrypted password blob'
-        ($model.AclFindings | Where-Object ObjectTypeName -eq 'msLAPS-PasswordExpirationTime').Reason | Should Match 'password expiration attribute'
+        @($model.AclFindings).Count | Should -Be 2
+        ($model.AclFindings | Where-Object ObjectTypeName -eq 'msLAPS-EncryptedPassword').Reason | Should -Match 'encrypted password blob'
+        ($model.AclFindings | Where-Object ObjectTypeName -eq 'msLAPS-PasswordExpirationTime').Reason | Should -Match 'password expiration attribute'
     }
 
     It 'detects sensitive membership and SPN write properties' {
@@ -207,9 +210,9 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 2
-        @($model.AclFindings | Where-Object NormalizedRight -eq 'WriteMembership').Count | Should Be 1
-        @($model.AclFindings | Where-Object NormalizedRight -eq 'WriteSPN').Count | Should Be 1
+        @($model.AclFindings).Count | Should -Be 2
+        @($model.AclFindings | Where-Object NormalizedRight -eq 'WriteMembership').Count | Should -Be 1
+        @($model.AclFindings | Where-Object NormalizedRight -eq 'WriteSPN').Count | Should -Be 1
     }
 
     It 'detects unexpected owners on privileged objects' {
@@ -228,15 +231,15 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].NormalizedRight | Should Be 'ObjectOwner'
-        $model.AclFindings[0].EvidenceType | Should Be 'SensitiveAclOwner'
-        $model.AclFindings[0].OwnerName | Should Be 'CONTOSO\HelpdeskUser'
-        $model.AclFindings[0].OwnerSid | Should Be 'S-1-5-21-1000-1000-1000-4401'
-        $model.AclFindings[0].OwnerDistinguishedName | Should Be 'CN=HelpdeskUser,OU=Helpdesk,DC=contoso,DC=local'
-        $model.AclFindings[0].TrusteeDistinguishedName | Should Be 'CN=HelpdeskUser,OU=Helpdesk,DC=contoso,DC=local'
-        $model.AclFindings[0].SourceDescriptorId | Should Be 'CN=AXZ,CN=Users,DC=contoso,DC=local'
-        $model.AclFindings[0].Tags -contains 'UnexpectedOwner' | Should Be $true
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].NormalizedRight | Should -Be 'ObjectOwner'
+        $model.AclFindings[0].EvidenceType | Should -Be 'SensitiveAclOwner'
+        $model.AclFindings[0].OwnerName | Should -Be 'CONTOSO\HelpdeskUser'
+        $model.AclFindings[0].OwnerSid | Should -Be 'S-1-5-21-1000-1000-1000-4401'
+        $model.AclFindings[0].OwnerDistinguishedName | Should -Be 'CN=HelpdeskUser,OU=Helpdesk,DC=contoso,DC=local'
+        $model.AclFindings[0].TrusteeDistinguishedName | Should -Be 'CN=HelpdeskUser,OU=Helpdesk,DC=contoso,DC=local'
+        $model.AclFindings[0].SourceDescriptorId | Should -Be 'CN=AXZ,CN=Users,DC=contoso,DC=local'
+        $model.AclFindings[0].Tags -contains 'UnexpectedOwner' | Should -Be $true
     }
 
     It 'falls back to target DN as source descriptor for owner findings' {
@@ -251,8 +254,8 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].SourceDescriptorId | Should Be 'CN=AXZ,CN=Users,DC=contoso,DC=local'
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].SourceDescriptorId | Should -Be 'CN=AXZ,CN=Users,DC=contoso,DC=local'
     }
 
     It 'does not flag expected built-in owners' {
@@ -266,7 +269,7 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 0
+        @($model.AclFindings).Count | Should -Be 0
     }
 
     It 'does not flag expected built-in ACL trustees' {
@@ -318,7 +321,7 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 0
+        @($model.AclFindings).Count | Should -Be 0
     }
 
     It 'still flags custom ACL trustees on built-in targets' {
@@ -335,9 +338,9 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].TrusteeName | Should Be 'CONTOSO\Helpdesk Delegates'
-        $model.AclFindings[0].NormalizedRight | Should Be 'WriteDacl'
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].TrusteeName | Should -Be 'CONTOSO\Helpdesk Delegates'
+        $model.AclFindings[0].NormalizedRight | Should -Be 'WriteDacl'
     }
 
     It 'preserves raw trustee strings and marks SID-only trustees as unresolved' {
@@ -353,11 +356,11 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].TrusteeSid | Should Be 'S-1-5-21-1000-1000-1000-8899'
-        $model.AclFindings[0].RawTrustee | Should Be 'S-1-5-21-1000-1000-1000-8899'
-        $model.AclFindings[0].UnresolvedTrustee | Should Be $true
-        $model.AclFindings[0].Tags -contains 'UnresolvedTrustee' | Should Be $true
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].TrusteeSid | Should -Be 'S-1-5-21-1000-1000-1000-8899'
+        $model.AclFindings[0].RawTrustee | Should -Be 'S-1-5-21-1000-1000-1000-8899'
+        $model.AclFindings[0].UnresolvedTrustee | Should -Be $true
+        $model.AclFindings[0].Tags -contains 'UnresolvedTrustee' | Should -Be $true
     }
 
     It 'keeps resolved trustee metadata when supplied by the collector' {
@@ -377,11 +380,11 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        $model.AclFindings[0].TrusteeSid | Should Be 'S-1-5-21-1000-1000-1000-2201'
-        $model.AclFindings[0].TrusteeDistinguishedName | Should Be 'CN=Helpdesk Delegates,OU=Groups,DC=contoso,DC=local'
-        $model.AclFindings[0].TrusteeObjectClass | Should Be 'group'
-        $model.AclFindings[0].UnresolvedTrustee | Should Be $false
+        @($model.AclFindings).Count | Should -Be 1
+        $model.AclFindings[0].TrusteeSid | Should -Be 'S-1-5-21-1000-1000-1000-2201'
+        $model.AclFindings[0].TrusteeDistinguishedName | Should -Be 'CN=Helpdesk Delegates,OU=Groups,DC=contoso,DC=local'
+        $model.AclFindings[0].TrusteeObjectClass | Should -Be 'group'
+        $model.AclFindings[0].UnresolvedTrustee | Should -Be $false
     }
 
     It 'preserves collector-supplied effective trustees on ACL findings' {
@@ -406,16 +409,16 @@ Describe 'ACL posture risk model' {
             }
         )
 
-        @($model.AclFindings).Count | Should Be 1
-        @($model.AclFindings[0].EffectiveTrustees).Count | Should Be 1
-        $model.AclFindings[0].EffectiveTrustees[0].Name | Should Be 'svc-deploy'
-        $model.AclFindings[0].FindingType | Should Be 'AdminSDHolderDelegationControl'
-        $model.AclFindings[0].NormalizedRight | Should Be 'WriteDacl'
-        $model.AclFindings[0].TargetRiskContext | Should Be 'AdminSDHolder protected-object ACL template'
-        $model.AclFindings[0].PropagationMechanism | Should Be 'SDProp'
-        $model.AclFindings[0].Tags -contains 'AdminSDHolder' | Should Be $true
-        $model.AclFindings[0].Tags -contains 'SDProp' | Should Be $true
-        $model.AclFindings[0].Reason | Should Match 'adminCount=1'
+        @($model.AclFindings).Count | Should -Be 1
+        @($model.AclFindings[0].EffectiveTrustees).Count | Should -Be 1
+        $model.AclFindings[0].EffectiveTrustees[0].Name | Should -Be 'svc-deploy'
+        $model.AclFindings[0].FindingType | Should -Be 'AdminSDHolderDelegationControl'
+        $model.AclFindings[0].NormalizedRight | Should -Be 'WriteDacl'
+        $model.AclFindings[0].TargetRiskContext | Should -Be 'AdminSDHolder protected-object ACL template'
+        $model.AclFindings[0].PropagationMechanism | Should -Be 'SDProp'
+        $model.AclFindings[0].Tags -contains 'AdminSDHolder' | Should -Be $true
+        $model.AclFindings[0].Tags -contains 'SDProp' | Should -Be $true
+        $model.AclFindings[0].Reason | Should -Match 'adminCount=1'
     }
 
     It 'adds ACL evidence and relationships to object risk summaries' {
@@ -435,16 +438,16 @@ Describe 'ACL posture risk model' {
 
         $objectModel = ConvertTo-ADObjectRiskModel -Findings @() -AclFindings @($acl.AclFindings) -Domain 'contoso.local'
 
-        @($objectModel.Objects).Count | Should Be 2
-        @($objectModel.ObjectEvidence).Count | Should Be 1
-        @($objectModel.ObjectRelationships).Count | Should Be 1
-        $objectModel.ObjectEvidence[0].EvidenceType | Should Be 'SensitiveAcl'
-        $objectModel.ObjectRelationships[0].RelationshipType | Should Be 'WriteDacl'
+        @($objectModel.Objects).Count | Should -Be 2
+        @($objectModel.ObjectEvidence).Count | Should -Be 1
+        @($objectModel.ObjectRelationships).Count | Should -Be 1
+        $objectModel.ObjectEvidence[0].EvidenceType | Should -Be 'SensitiveAcl'
+        $objectModel.ObjectRelationships[0].RelationshipType | Should -Be 'WriteDacl'
 
         $target = $objectModel.Objects | Where-Object DisplayName -eq 'AdminSDHolder'
-        $target.Tags -contains 'SensitiveAclTarget' | Should Be $true
-        $target.Tags -contains 'SDProp' | Should Be $true
-        $target.RiskScore | Should Be 10.0
+        $target.Tags -contains 'SensitiveAclTarget' | Should -Be $true
+        $target.Tags -contains 'SDProp' | Should -Be $true
+        $target.RiskScore | Should -Be 10.0
     }
 }
 
@@ -473,8 +476,8 @@ Describe 'ACL posture target discovery' {
 
         $targets = Get-ADPostureAclTargets -BaseTargets $baseTargets -Domain $domain -DomainParams @{}
 
-        @($targets).Count | Should Be 1
-        $targets[0].Name | Should Be 'Domain Admins'
+        @($targets).Count | Should -Be 1
+        $targets[0].Name | Should -Be 'Domain Admins'
     }
 
     It 'normalizes synthetic AD objects into ACL targets without requiring live AD' {
@@ -489,26 +492,26 @@ Describe 'ACL posture target discovery' {
 
         $target = ConvertTo-ADPostureAclTarget -InputObject $object -TargetType 'user'
 
-        $target.Name | Should Be 'AXZ'
-        $target.DistinguishedName | Should Be 'CN=AXZ,CN=Users,DC=contoso,DC=local'
-        $target.CanonicalName | Should Be 'contoso.local/Users/AXZ'
-        $target.ObjectSid | Should Be 'S-1-5-21-1000-1000-1000-5001'
-        $target.ObjectClass | Should Be 'user'
-        $target.AclTargetType | Should Be 'user'
+        $target.Name | Should -Be 'AXZ'
+        $target.DistinguishedName | Should -Be 'CN=AXZ,CN=Users,DC=contoso,DC=local'
+        $target.CanonicalName | Should -Be 'contoso.local/Users/AXZ'
+        $target.ObjectSid | Should -Be 'S-1-5-21-1000-1000-1000-5001'
+        $target.ObjectClass | Should -Be 'user'
+        $target.AclTargetType | Should -Be 'user'
     }
 
     It 'exposes broad ACL target discovery switches' {
         $command = Get-Command Get-ADPostureAclTargets
 
-        $command.Parameters.ContainsKey('IncludeAllObjects') | Should Be $true
-        $command.Parameters.ContainsKey('SearchBase') | Should Be $true
+        $command.Parameters.ContainsKey('IncludeAllObjects') | Should -Be $true
+        $command.Parameters.ContainsKey('SearchBase') | Should -Be $true
     }
 
     It 'keeps ACL collection pacing and effective expansion tunable' {
         $command = Get-Command Get-ADPostureAclPosture
 
-        $command.Parameters.ContainsKey('ReadDelayMilliseconds') | Should Be $true
-        $command.Parameters.ContainsKey('EffectiveTrusteeLimit') | Should Be $true
+        $command.Parameters.ContainsKey('ReadDelayMilliseconds') | Should -Be $true
+        $command.Parameters.ContainsKey('EffectiveTrusteeLimit') | Should -Be $true
     }
 
     It 'disables effective trustee expansion when the limit is zero' {
@@ -520,22 +523,22 @@ Describe 'ACL posture target discovery' {
 
         $effective = Resolve-ADPostureAclEffectiveTrustees -Trustee $trustee -Limit 0
 
-        @($effective).Count | Should Be 0
+        @($effective).Count | Should -Be 0
     }
 
     It 'uses a bounded paged LDAP query for recursive effective trustees' {
         $source = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'src\Private\Get-ADPostureAclPosture.ps1')
 
-        $source | Should Match '1\.2\.840\.113556\.1\.4\.1941'
-        $source | Should Match '-ResultSetSize \$Limit'
-        $source | Should Not Match 'Get-ADGroupMember\s+-Identity\s+\$Trustee\.DistinguishedName\s+-Recursive'
+        $source | Should -Match '1\.2\.840\.113556\.1\.4\.1941'
+        $source | Should -Match '-ResultSetSize \$Limit'
+        $source | Should -Not -Match 'Get-ADGroupMember\s+-Identity\s+\$Trustee\.DistinguishedName\s+-Recursive'
     }
 
     It 'uses ObjectSid for generic AD object target discovery' {
         $source = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'src\Private\Get-ADPostureAclTargets.ps1')
 
-        $source | Should Match 'DisplayName,ObjectSid,ObjectGUID,ObjectClass,CanonicalName'
-        $source | Should Not Match 'DisplayName,SID,ObjectGUID,ObjectClass'
+        $source | Should -Match 'DisplayName,ObjectSid,ObjectGUID,ObjectClass,CanonicalName'
+        $source | Should -Not -Match 'DisplayName,SID,ObjectGUID,ObjectClass'
     }
 
     It 'normalizes synthetic effective trustees without requiring live AD' {
@@ -548,11 +551,11 @@ Describe 'ACL posture target discovery' {
 
         $effective = ConvertTo-ADPostureAclEffectiveTrustee -InputObject $member -DirectTrusteeName 'ACL Delegated Admins'
 
-        $effective.Name | Should Be 'svc-deploy'
-        $effective.Sid | Should Be 'S-1-5-21-1000-1000-1000-3301'
-        $effective.DistinguishedName | Should Be 'CN=svc-deploy,OU=Service Accounts,DC=contoso,DC=local'
-        $effective.ObjectClass | Should Be 'user'
-        $effective.Path | Should Be 'svc-deploy -> ACL Delegated Admins'
+        $effective.Name | Should -Be 'svc-deploy'
+        $effective.Sid | Should -Be 'S-1-5-21-1000-1000-1000-3301'
+        $effective.DistinguishedName | Should -Be 'CN=svc-deploy,OU=Service Accounts,DC=contoso,DC=local'
+        $effective.ObjectClass | Should -Be 'user'
+        $effective.Path | Should -Be 'svc-deploy -> ACL Delegated Admins'
     }
 }
 
@@ -560,17 +563,17 @@ Describe 'ACL trustee resolution' {
     It 'keeps name-only trustees as named rather than unresolved' {
         $trustee = Resolve-ADPostureAclTrustee -IdentityReference 'CONTOSO\Helpdesk Delegates' -DomainParams @{} -Cache @{}
 
-        $trustee.Name | Should Be 'CONTOSO\Helpdesk Delegates'
-        $trustee.Raw | Should Be 'CONTOSO\Helpdesk Delegates'
-        $trustee.Sid | Should Be $null
-        $trustee.IsUnresolved | Should Be $false
+        $trustee.Name | Should -Be 'CONTOSO\Helpdesk Delegates'
+        $trustee.Raw | Should -Be 'CONTOSO\Helpdesk Delegates'
+        $trustee.Sid | Should -Be $null
+        $trustee.IsUnresolved | Should -Be $false
     }
 
     It 'marks deleted account trustees with embedded SIDs as unresolved' {
         $trustee = Resolve-ADPostureAclTrustee -IdentityReference 'Account Unknown(S-1-5-21-1000-1000-1000-8899)' -DomainParams @{} -Cache @{}
 
-        $trustee.Raw | Should Be 'Account Unknown(S-1-5-21-1000-1000-1000-8899)'
-        $trustee.Sid | Should Be 'S-1-5-21-1000-1000-1000-8899'
-        $trustee.IsUnresolved | Should Be $true
+        $trustee.Raw | Should -Be 'Account Unknown(S-1-5-21-1000-1000-1000-8899)'
+        $trustee.Sid | Should -Be 'S-1-5-21-1000-1000-1000-8899'
+        $trustee.IsUnresolved | Should -Be $true
     }
 }

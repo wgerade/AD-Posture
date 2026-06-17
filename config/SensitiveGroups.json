@@ -46,10 +46,20 @@
     "Protected Users": 525,
     "Key Admins": 526,
     "Enterprise Key Admins": 527,
+    "Administrators": 544,
     "Account Operators": 548,
     "Server Operators": 549,
     "Print Operators": 550,
-    "Backup Operators": 551
+    "Backup Operators": 551,
+    "Remote Desktop Users": 555,
+    "Incoming Forest Trust Builders": 557,
+    "Windows Authorization Access Group": 560,
+    "Cryptographic Operators": 569,
+    "Allowed RODC Password Replication Group": 571,
+    "Denied RODC Password Replication Group": 572,
+    "Hyper-V Administrators": 578,
+    "Remote Management Users": 580,
+    "Storage Replica Administrators": 582
   },
   "excludedAccounts": [
     "krbtgt",

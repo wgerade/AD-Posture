@@ -128,7 +128,7 @@ window.__AD_DEMO_DATA__ = {
   ],
   meta: {
     sensitivity: 'Synthetic demo data only. Safe for public screenshots.',
-    domain: 'corp.example', forest: 'corp.example', timestamp: '2026-06-10T09:00:00-05:00', overallRiskScore: 37.0, targetScore: 0,
+    domain: 'corp.example', forest: 'corp.example', auditedBy: 'CORP\\demo.analyst', timestamp: '2026-06-10T09:00:00-05:00', overallRiskScore: 37.0, targetScore: 0,
     actionableCount: 6, approvedExceptionCount: 1, expiredExceptionCount: 1,
     tierBreakdown: { 'Tier 0': 4, 'Tier 1': 1, 'Tier 2': 1 }, remediation: { High: 2, Medium: 3, Low: 1 },
     readiness: { Score: 68, Controls: [

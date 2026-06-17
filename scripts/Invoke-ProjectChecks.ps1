@@ -45,27 +45,19 @@ if (-not $SkipAnalyzer) {
 
 if (-not $SkipTests) {
     $availablePester = @(Get-Module -ListAvailable -Name Pester | Sort-Object Version -Descending)
-    $pester = @($availablePester | Where-Object { $_.Version.Major -eq 4 } | Select-Object -First 1)
+    $pester = @($availablePester | Where-Object { $_.Version.Major -ge 5 } | Select-Object -First 1)
     if (-not $pester) {
-        $pester = @($availablePester | Select-Object -First 1)
-    }
-    if (-not $pester) {
-        Write-Warning 'Pester is not installed. Install-Module Pester -Scope CurrentUser'
+        Write-Warning 'Pester 5+ is required (the test suite uses Pester 5 discovery semantics). Install-Module Pester -Scope CurrentUser'
         $failed = $true
     }
     else {
         Import-Module Pester -RequiredVersion $pester.Version -ErrorAction Stop
         $testsPath = Join-Path $repoRoot 'tests'
-        if ($pester.Version.Major -ge 5) {
-            $config = New-PesterConfiguration
-            $config.Run.Path = $testsPath
-            $config.Run.PassThru = $true
-            $config.Output.Verbosity = 'Detailed'
-            $result = Invoke-Pester -Configuration $config
-        }
-        else {
-            $result = Invoke-Pester -Script $testsPath -PassThru
-        }
+        $config = New-PesterConfiguration
+        $config.Run.Path = $testsPath
+        $config.Run.PassThru = $true
+        $config.Output.Verbosity = 'Detailed'
+        $result = Invoke-Pester -Configuration $config
         if ($result.FailedCount -gt 0) {
             $failed = $true
         }

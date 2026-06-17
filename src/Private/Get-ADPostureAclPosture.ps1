@@ -1,6 +1,8 @@
 function Get-ADPostureAclSchemaObjectTypeMap {
     [CmdletBinding()]
-    param()
+    param(
+        [hashtable]$DomainParams
+    )
 
     $names = @(
         'ms-Mcs-AdmPwd',
@@ -15,10 +17,11 @@ function Get-ADPostureAclSchemaObjectTypeMap {
     )
 
     $map = @{}
+    $queryParams = if ($DomainParams) { $DomainParams } else { @{} }
     try {
-        $rootDse = Get-ADRootDSE -ErrorAction Stop
+        $rootDse = Get-ADRootDSE @queryParams -ErrorAction Stop
         $filter = '(|' + (($names | ForEach-Object { "(lDAPDisplayName=$_)"} ) -join '') + ')'
-        $schemaObjects = @(Get-ADObject -SearchBase $rootDse.schemaNamingContext -LDAPFilter $filter -Properties lDAPDisplayName,schemaIDGUID -ErrorAction Stop)
+        $schemaObjects = @(Get-ADObject -SearchBase $rootDse.schemaNamingContext -LDAPFilter $filter -Properties lDAPDisplayName,schemaIDGUID @queryParams -ErrorAction Stop)
         foreach ($schemaObject in $schemaObjects) {
             if ($schemaObject.schemaIDGUID -and $schemaObject.lDAPDisplayName) {
                 $map[([guid]$schemaObject.schemaIDGUID).Guid.ToLowerInvariant()] = [string]$schemaObject.lDAPDisplayName
@@ -36,17 +39,18 @@ function Get-ADPostureAclSecurityDescriptor {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string]$DistinguishedName
+        [string]$DistinguishedName,
+        [hashtable]$DomainParams
     )
 
-    $adPath = "AD:\$DistinguishedName"
+    $adPath = Get-ADPostureAdAclPath -DistinguishedName $DistinguishedName -DomainParams $DomainParams
     try {
         return Get-Acl -LiteralPath $adPath -ErrorAction Stop
     }
     catch {
         $providerError = $_.Exception.Message
         try {
-            $entry = [System.DirectoryServices.DirectoryEntry]::new("LDAP://$DistinguishedName")
+            $entry = [System.DirectoryServices.DirectoryEntry]::new((Get-ADPostureLdapPath -DistinguishedName $DistinguishedName -DomainParams $DomainParams))
             $security = $entry.ObjectSecurity
             $owner = $null
             try {
@@ -250,7 +254,7 @@ function Get-ADPostureAclPosture {
 
     $rules = [System.Collections.Generic.List[object]]::new()
     $seenTargets = @{}
-    $schemaObjectTypeMap = Get-ADPostureAclSchemaObjectTypeMap
+    $schemaObjectTypeMap = Get-ADPostureAclSchemaObjectTypeMap -DomainParams $DomainParams
     $targetList = @($Targets)
     $totalTargets = $targetList.Count
     $processedTargets = 0
@@ -276,7 +280,7 @@ function Get-ADPostureAclPosture {
         }
 
         try {
-            $acl = Get-ADPostureAclSecurityDescriptor -DistinguishedName $dn -ErrorAction Stop
+            $acl = Get-ADPostureAclSecurityDescriptor -DistinguishedName $dn -DomainParams $DomainParams -ErrorAction Stop
         }
         catch {
             Write-Warning "Could not read ACL for '$dn': $($_.Exception.Message)"

@@ -1,18 +1,20 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\ConvertTo-ADPostureSafeLiteral.ps1')
-. (Join-Path $repoRoot 'src\Public\New-ADPostureRemediationScript.ps1')
-. (Join-Path $repoRoot 'src\Public\New-ADPostureRemediationScriptSafe.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\ConvertTo-ADPostureSafeLiteral.ps1')
+    . (Join-Path $repoRoot 'src\Public\New-ADPostureRemediationScript.ps1')
 
-function Test-ADModuleAvailable { }
-function Get-ModuleConfig { [pscustomobject]@{ ReportPath = $TestDrive } }
+    function Test-ADModuleAvailable { }
+    function Get-ModuleConfig { [pscustomobject]@{ ReportPath = $TestDrive } }
+
+}
 
 Describe 'Security hardening helpers' {
     It 'quotes PowerShell literals without allowing quote breakout' {
-        ConvertTo-ADPosturePowerShellLiteral -Value "adm'; Remove-Item C:\*" | Should Be "'adm''; Remove-Item C:\*'"
+        ConvertTo-ADPosturePowerShellLiteral -Value "adm'; Remove-Item C:\*" | Should -Be "'adm''; Remove-Item C:\*'"
     }
 
     It 'escapes AD filter literals' {
-        ConvertTo-ADPostureADFilterLiteral -Value "Domain Admins' or Name -like '*" | Should Be "Domain Admins'' or Name -like ''*"
+        ConvertTo-ADPostureADFilterLiteral -Value "Domain Admins' or Name -like '*" | Should -Be "Domain Admins'' or Name -like ''*"
     }
 
     It 'generates remediation scripts with escaped inputs and runtime AD filters' {
@@ -28,16 +30,16 @@ Describe 'Security hardening helpers' {
 
         $content = Get-Content -Path $out -Raw
 
-        $content | Should Match "\`$MemberSamAccountName = 'adm''; Remove-ADGroupMember x #'"
-        $content | Should Match "\`$SensitiveGroup = 'Domain Admins''; Get-ADUser \* #'"
-        $content | Should Match "\`$RemovalGroupIdentity = 'Nested Admins''; Get-ADGroup \* #'"
-        $content | Should Match "\`$Server = 'dc01''; Invoke-Expression x #'"
-        $content | Should Match 'ConvertTo-ADFilterLiteral'
-        $content | Should Match 'Get-ADUser -Filter \$memberFilter @serverParams'
-        $content | Should Match 'Get-ADGroup -Filter \$memberFilter @serverParams'
-        $content | Should Match 'Get-ADGroup -Identity \$RemovalGroupIdentity -Properties member'
-        $content | Should Match 'is not a direct member'
-        $content | Should Match 'Remove-ADGroupMember .* -WhatIf'
+        $content | Should -Match "\`$MemberSamAccountName = 'adm''; Remove-ADGroupMember x #'"
+        $content | Should -Match "\`$SensitiveGroup = 'Domain Admins''; Get-ADUser \* #'"
+        $content | Should -Match "\`$RemovalGroupIdentity = 'Nested Admins''; Get-ADGroup \* #'"
+        $content | Should -Match "\`$Server = 'dc01''; Invoke-Expression x #'"
+        $content | Should -Match 'ConvertTo-ADFilterLiteral'
+        $content | Should -Match 'Get-ADUser -Filter \$memberFilter @serverParams'
+        $content | Should -Match 'Get-ADGroup -Filter \$memberFilter @serverParams'
+        $content | Should -Match 'Get-ADGroup -Identity \$RemovalGroupIdentity -Properties member'
+        $content | Should -Match 'is not a direct member'
+        $content | Should -Match 'Remove-ADGroupMember .* -WhatIf'
     }
 
     It 'uses the sensitive group as the default removal group' {
@@ -49,6 +51,6 @@ Describe 'Security hardening helpers' {
             -WhatIfOnly `
             -OutputPath $out | Out-Null
 
-        (Get-Content -Path $out -Raw) | Should Match "\`$RemovalGroupIdentity = 'Domain Admins'"
+        (Get-Content -Path $out -Raw) | Should -Match "\`$RemovalGroupIdentity = 'Domain Admins'"
     }
 }
