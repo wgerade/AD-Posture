@@ -1,7 +1,10 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureIdentityRiskPosture.ps1')
-. (Join-Path $repoRoot 'src\Private\Resolve-ADPostureApprovedException.ps1')
-. (Join-Path $repoRoot 'src\Private\ConvertTo-ADObjectRiskModel.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureIdentityRiskPosture.ps1')
+    . (Join-Path $repoRoot 'src\Private\Resolve-ADPostureApprovedException.ps1')
+    . (Join-Path $repoRoot 'src\Private\ConvertTo-ADObjectRiskModel.ps1')
+
+}
 
 Describe 'Identity risk posture' {
     It 'reports privileged SIDHistory as object-risk evidence' {
@@ -16,10 +19,10 @@ Describe 'Identity risk posture' {
             })
 
         $finding = $model.IdentityRiskFindings | Where-Object FindingType -eq 'PrivilegedSidHistoryPresent' | Select-Object -First 1
-        $finding | Should Not BeNullOrEmpty
-        $finding.IdentityRiskFindingId | Should Match '^identity-'
-        $finding.SourceDomain | Should Be 'ObjectRisk'
-        $finding.Tags -contains 'SIDHistory' | Should Be $true
+        $finding | Should -Not -BeNullOrEmpty
+        $finding.IdentityRiskFindingId | Should -Match '^identity-'
+        $finding.SourceDomain | Should -Be 'ObjectRisk'
+        $finding.Tags -contains 'SIDHistory' | Should -Be $true
     }
 
     It 'reports adminCount protected objects without current protected membership as review evidence' {
@@ -34,12 +37,12 @@ Describe 'Identity risk posture' {
             })
 
         $finding = $model.IdentityRiskFindings | Where-Object FindingType -eq 'AdminCountOrphanedProtectedObject' | Select-Object -First 1
-        $finding | Should Not BeNullOrEmpty
-        $finding.SourceDomain | Should Be 'ObjectRisk'
-        $finding.Severity | Should Be 'Medium'
-        $finding.Tags -contains 'AdminSDHolder' | Should Be $true
-        $finding.Tags -contains 'SDProp' | Should Be $true
-        $finding.Reason | Should Match 'AdminSDHolder'
+        $finding | Should -Not -BeNullOrEmpty
+        $finding.SourceDomain | Should -Be 'ObjectRisk'
+        $finding.Severity | Should -Be 'Medium'
+        $finding.Tags -contains 'AdminSDHolder' | Should -Be $true
+        $finding.Tags -contains 'SDProp' | Should -Be $true
+        $finding.Reason | Should -Match 'AdminSDHolder'
     }
 
     It 'does not report adminCount objects that still reference protected groups' {
@@ -53,7 +56,7 @@ Describe 'Identity risk posture' {
                 MemberOf = @('CN=Domain Admins,CN=Users,DC=contoso,DC=local')
             })
 
-        @($model.IdentityRiskFindings | Where-Object FindingType -eq 'AdminCountOrphanedProtectedObject').Count | Should Be 0
+        @($model.IdentityRiskFindings | Where-Object FindingType -eq 'AdminCountOrphanedProtectedObject').Count | Should -Be 0
     }
 
     It 'matches approved exceptions scoped to migrated SIDHistory findings' {
@@ -77,7 +80,7 @@ Describe 'Identity risk posture' {
 
         $result = Resolve-ADPostureApprovedFindingException -Finding $finding -Catalog $catalog -AsOf ([datetime]'2026-06-03')
 
-        $result.Id | Should Be 'EXC-SIDHISTORY-001'
+        $result.Id | Should -Be 'EXC-SIDHISTORY-001'
     }
 
     It 'adds privileged SIDHistory to object risk as identity-risk evidence' {
@@ -105,8 +108,8 @@ Describe 'Identity risk posture' {
 
         $objectModel = ConvertTo-ADObjectRiskModel -Findings @() -IdentityRiskFindings @($finding) -Domain 'contoso.local'
 
-        @($objectModel.Objects).Count | Should Be 1
-        @($objectModel.ObjectEvidence | Where-Object SourceDomain -eq 'ObjectRisk').Count | Should Be 1
-        $objectModel.ObjectEvidence[0].IdentityRiskFindingId | Should Be 'identity-000003'
+        @($objectModel.Objects).Count | Should -Be 1
+        @($objectModel.ObjectEvidence | Where-Object SourceDomain -eq 'ObjectRisk').Count | Should -Be 1
+        $objectModel.ObjectEvidence[0].IdentityRiskFindingId | Should -Be 'identity-000003'
     }
 }

@@ -1,14 +1,16 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
-. (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardData.ps1')
-. (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardDataStatic.ps1')
-. (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardDataPayloadV12.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
+    . (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardData.ps1')
+    . (Join-Path $repoRoot 'src\Private\Write-ADPostureDashboardDataPayloadV12.ps1')
 
-function Get-ModuleConfig {
-    [pscustomobject]@{
-        ReportPath = Join-Path $TestDrive 'reports'
-        DashboardPath = Join-Path $TestDrive 'dashboard'
+    function Get-ModuleConfig {
+        [pscustomobject]@{
+            ReportPath = Join-Path $TestDrive 'reports'
+            DashboardPath = Join-Path $TestDrive 'dashboard'
+        }
     }
+
 }
 
 Describe 'Dashboard payload' {
@@ -127,51 +129,51 @@ Describe 'Dashboard payload' {
 
         $payload = Get-ADPostureDashboardPayload -Snapshot $snapshot
 
-        $payload.meta.domain | Should Be 'contoso.local'
-        $payload.meta.schemaVersion | Should Be '1.2'
-        $payload.meta.auditId | Should Be 'audit-payload-1'
-        @($payload.postureSummary).Count | Should Be 1
-        $payload.postureSummary[0].PostureDomain | Should Be 'Sensitive Groups'
-        $payload.meta.aclFieldClassification.TargetDistinguishedName | Should Be 'Sensitive'
-        $payload.meta.aclFieldClassification.NormalizedRight | Should Be 'Operational'
-        $payload.meta.redactedAclEvidence | Should Be $false
-        $payload.meta.tierBreakdown['Tier 0'] | Should Be 1
-        @($payload.findings).Count | Should Be 1
-        $payload.findings[0].MemberSam | Should Be 'kept'
-        @($payload.monitoring).Count | Should Be 1
-        $payload.monitoring[0].MemberSam | Should Be 'hidden'
+        $payload.meta.domain | Should -Be 'contoso.local'
+        $payload.meta.schemaVersion | Should -Be '1.2'
+        $payload.meta.auditId | Should -Be 'audit-payload-1'
+        @($payload.postureSummary).Count | Should -Be 1
+        $payload.postureSummary[0].PostureDomain | Should -Be 'Sensitive Groups'
+        $payload.meta.aclFieldClassification.TargetDistinguishedName | Should -Be 'Sensitive'
+        $payload.meta.aclFieldClassification.NormalizedRight | Should -Be 'Operational'
+        $payload.meta.redactedAclEvidence | Should -Be $false
+        $payload.meta.tierBreakdown['Tier 0'] | Should -Be 1
+        @($payload.findings).Count | Should -Be 1
+        $payload.findings[0].MemberSam | Should -Be 'kept'
+        @($payload.monitoring).Count | Should -Be 1
+        $payload.monitoring[0].MemberSam | Should -Be 'hidden'
         foreach ($requiredProperty in @('MemberSam', 'IsExcluded')) {
-            $payload.findings[0].PSObject.Properties.Name -contains $requiredProperty | Should Be $true
-            $payload.monitoring[0].PSObject.Properties.Name -contains $requiredProperty | Should Be $true
+            $payload.findings[0].PSObject.Properties.Name -contains $requiredProperty | Should -Be $true
+            $payload.monitoring[0].PSObject.Properties.Name -contains $requiredProperty | Should -Be $true
         }
-        $payload.meta.approvedExceptionCount | Should Be 1
-        $payload.meta.readiness.Score | Should Be 88
-        @($payload.exceptions).Count | Should Be 7
-        $payload.exceptions[0].MemberSam | Should Be 'approved'
-        @($payload.aclFindings).Count | Should Be 1
-        $payload.aclFindings[0].NormalizedRight | Should Be 'GenericAll'
-        @($payload.gpoFindings).Count | Should Be 1
-        $payload.gpoFindings[0].FindingType | Should Be 'GpoDelegationControl'
-        @($payload.adcsTemplates).Count | Should Be 1
-        @($payload.adcsCas).Count | Should Be 1
-        $payload.adcsNtAuth.Name | Should Be 'NTAuthCertificates'
-        @($payload.adcsFindings).Count | Should Be 1
-        $payload.adcsFindings[0].FindingType | Should Be 'AdcsEsc1LikeTemplate'
-        @($payload.kerberosAuthFindings).Count | Should Be 1
-        $payload.kerberosAuthFindings[0].FindingType | Should Be 'KerberosRoastableServiceAccount'
-        @($payload.kerberosAuthPrincipals).Count | Should Be 1
-        $payload.kerberosAuthPolicy.Source | Should Be 'Synthetic'
-        @($payload.trusts).Count | Should Be 1
-        @($payload.trustFindings).Count | Should Be 1
-        $payload.trustFindings[0].FindingType | Should Be 'TrustSidFilteringDisabled'
-        @($payload.dnsZones).Count | Should Be 1
-        @($payload.dnsRecords).Count | Should Be 1
-        @($payload.dnsAdmins).Count | Should Be 1
-        @($payload.dnsFindings).Count | Should Be 1
-        $payload.dnsFindings[0].FindingType | Should Be 'DnsWildcardRecord'
-        @($payload.objects).Count | Should Be 1
-        @($payload.objectEvidence).Count | Should Be 1
-        @($payload.objectRelationships).Count | Should Be 1
+        $payload.meta.approvedExceptionCount | Should -Be 1
+        $payload.meta.readiness.Score | Should -Be 88
+        @($payload.exceptions).Count | Should -Be 7
+        $payload.exceptions[0].MemberSam | Should -Be 'approved'
+        @($payload.aclFindings).Count | Should -Be 1
+        $payload.aclFindings[0].NormalizedRight | Should -Be 'GenericAll'
+        @($payload.gpoFindings).Count | Should -Be 1
+        $payload.gpoFindings[0].FindingType | Should -Be 'GpoDelegationControl'
+        @($payload.adcsTemplates).Count | Should -Be 1
+        @($payload.adcsCas).Count | Should -Be 1
+        $payload.adcsNtAuth.Name | Should -Be 'NTAuthCertificates'
+        @($payload.adcsFindings).Count | Should -Be 1
+        $payload.adcsFindings[0].FindingType | Should -Be 'AdcsEsc1LikeTemplate'
+        @($payload.kerberosAuthFindings).Count | Should -Be 1
+        $payload.kerberosAuthFindings[0].FindingType | Should -Be 'KerberosRoastableServiceAccount'
+        @($payload.kerberosAuthPrincipals).Count | Should -Be 1
+        $payload.kerberosAuthPolicy.Source | Should -Be 'Synthetic'
+        @($payload.trusts).Count | Should -Be 1
+        @($payload.trustFindings).Count | Should -Be 1
+        $payload.trustFindings[0].FindingType | Should -Be 'TrustSidFilteringDisabled'
+        @($payload.dnsZones).Count | Should -Be 1
+        @($payload.dnsRecords).Count | Should -Be 1
+        @($payload.dnsAdmins).Count | Should -Be 1
+        @($payload.dnsFindings).Count | Should -Be 1
+        $payload.dnsFindings[0].FindingType | Should -Be 'DnsWildcardRecord'
+        @($payload.objects).Count | Should -Be 1
+        @($payload.objectEvidence).Count | Should -Be 1
+        @($payload.objectRelationships).Count | Should -Be 1
     }
 
     It 'can redact sensitive ACL evidence fields for export' {
@@ -213,16 +215,16 @@ Describe 'Dashboard payload' {
 
         $payload = Get-ADPostureDashboardPayload -Snapshot $snapshot -RedactSensitiveAclEvidence
 
-        $payload.meta.redactedAclEvidence | Should Be $true
-        $payload.aclFindings[0].TargetName | Should Be '[REDACTED]'
-        $payload.aclFindings[0].TargetDistinguishedName | Should Be '[REDACTED]'
-        $payload.aclFindings[0].TrusteeName | Should Be '[REDACTED]'
-        $payload.aclFindings[0].TrusteeSid | Should Be '[REDACTED]'
-        $payload.aclFindings[0].RawSddl | Should Be '[REDACTED]'
-        $payload.aclFindings[0].NormalizedRight | Should Be 'GenericAll'
-        $payload.objectEvidence[0].RelatedObjectName | Should Be '[REDACTED]'
-        $payload.objectEvidence[0].Path | Should Be '[REDACTED]'
-        $payload.objectEvidence[0].SecurityDescriptorSddl | Should Be '[REDACTED]'
+        $payload.meta.redactedAclEvidence | Should -Be $true
+        $payload.aclFindings[0].TargetName | Should -Be '[REDACTED]'
+        $payload.aclFindings[0].TargetDistinguishedName | Should -Be '[REDACTED]'
+        $payload.aclFindings[0].TrusteeName | Should -Be '[REDACTED]'
+        $payload.aclFindings[0].TrusteeSid | Should -Be '[REDACTED]'
+        $payload.aclFindings[0].RawSddl | Should -Be '[REDACTED]'
+        $payload.aclFindings[0].NormalizedRight | Should -Be 'GenericAll'
+        $payload.objectEvidence[0].RelatedObjectName | Should -Be '[REDACTED]'
+        $payload.objectEvidence[0].Path | Should -Be '[REDACTED]'
+        $payload.objectEvidence[0].SecurityDescriptorSddl | Should -Be '[REDACTED]'
     }
 
     It 'keeps ACL effective trustees bounded in dashboard payload' {
@@ -265,10 +267,10 @@ Describe 'Dashboard payload' {
 
         $payload = Get-ADPostureDashboardPayload -Snapshot $snapshot
 
-        $payload.aclFindings[0].PSObject.Properties['EffectiveTrustees'] | Should BeNullOrEmpty
-        $payload.aclFindings[0].EffectiveTrusteeCount | Should Be 25
-        @($payload.aclFindings[0].EffectiveTrusteesSample).Count | Should Be 10
-        $payload.aclFindings[0].EffectiveTrusteesTruncated | Should Be $true
+        $payload.aclFindings[0].PSObject.Properties['EffectiveTrustees'] | Should -BeNullOrEmpty
+        $payload.aclFindings[0].EffectiveTrusteeCount | Should -Be 25
+        @($payload.aclFindings[0].EffectiveTrusteesSample).Count | Should -Be 10
+        $payload.aclFindings[0].EffectiveTrusteesTruncated | Should -Be $true
     }
 
     It 'does not emit clear-text LAPS value fields in dashboard payload shape' {
@@ -299,10 +301,10 @@ Describe 'Dashboard payload' {
 
         $json = Get-ADPostureDashboardPayload -Snapshot $snapshot | ConvertTo-Json -Depth 12
 
-        $json | Should Not Match '"ms-Mcs-AdmPwd"\s*:'
-        $json | Should Not Match '"msLAPS-Password"\s*:'
-        $json | Should Not Match '"msLAPS-EncryptedPassword"\s*:'
-        $json | Should Not Match '"msLAPS-EncryptedDSRMPassword"\s*:'
+        $json | Should -Not -Match '"ms-Mcs-AdmPwd"\s*:'
+        $json | Should -Not -Match '"msLAPS-Password"\s*:'
+        $json | Should -Not -Match '"msLAPS-EncryptedPassword"\s*:'
+        $json | Should -Not -Match '"msLAPS-EncryptedDSRMPassword"\s*:'
     }
 
     It 'writes dashboard data atomically and protects generated files best-effort' {
@@ -318,12 +320,12 @@ Describe 'Dashboard payload' {
         $dashboardJson = Join-Path $cfg.DashboardPath 'latest-dashboard.json'
         $dashboardJs = Join-Path $cfg.DashboardPath 'dashboard-data.js'
 
-        Test-Path -LiteralPath $reportJson | Should Be $true
-        Test-Path -LiteralPath $dashboardJson | Should Be $true
-        Test-Path -LiteralPath $dashboardJs | Should Be $true
-        (Get-Content -LiteralPath $reportJson -Raw -Encoding UTF8) | Should Match '"domain":"contoso.local"'
-        (Get-Content -LiteralPath $dashboardJs -Raw -Encoding UTF8) | Should Match 'window.__AD_AUDIT_DATA__'
-        Test-Path -LiteralPath (Join-Path $cfg.ReportPath 'dashboard-store') | Should Be $false
+        Test-Path -LiteralPath $reportJson | Should -Be $true
+        Test-Path -LiteralPath $dashboardJson | Should -Be $true
+        Test-Path -LiteralPath $dashboardJs | Should -Be $true
+        (Get-Content -LiteralPath $reportJson -Raw -Encoding UTF8) | Should -Match '"domain":"contoso.local"'
+        (Get-Content -LiteralPath $dashboardJs -Raw -Encoding UTF8) | Should -Match 'window.__AD_AUDIT_DATA__'
+        Test-Path -LiteralPath (Join-Path $cfg.ReportPath 'dashboard-store') | Should -Be $false
     }
 
     It 'loads the full embedded dashboard bundle for static pages' {
@@ -332,44 +334,60 @@ Describe 'Dashboard payload' {
 
         foreach ($page in @($pages | Where-Object { $_.Name -ne 'trust.html' })) {
             $content = Get-Content -LiteralPath $page.FullName -Raw
-            $content | Should Match '<script src="bootstrap\.js"'
+            # Static code assets carry a ?v= cache-busting query; the generated data bundle must not.
+            $content | Should -Match '<script src="dashboard-data\.js"'
+            $content | Should -Match '<script src="demo-data\.js(\?v=[^"]+)?"'
+            $content | Should -Match '<link rel="stylesheet" href="styles-v2\.css\?v=[^"]+"'
+            # The guided tour is reserved for the public demo page and must not ship in the product pages.
+            $content | Should -Not -Match 'tour\.js'
+            $content | Should -Not -Match 'bootstrap\.js'
+            # The generated bundle must load before shared.js so embedded data wins over demo fallback.
+            $content.IndexOf('dashboard-data.js') | Should -BeLessThan $content.IndexOf('shared.js')
         }
 
-        $bootstrap = Get-Content -LiteralPath (Join-Path $dashboardRoot 'bootstrap.js') -Raw
-        $bootstrap | Should Match 'dashboard-data\.js'
-        $bootstrap | Should Not Match 'location\.protocol'
+        $timeline = Get-Content -LiteralPath (Join-Path $dashboardRoot 'timeline.html') -Raw
+        $timeline | Should -Match '<script src="timeline-data\.js"'
+        $timeline | Should -Match '<script src="demo-timeline-data\.js(\?v=[^"]+)?"'
+
+        $demo = Get-Content -LiteralPath (Join-Path $dashboardRoot 'demo-data.js') -Raw
+        $demo | Should -Match 'window\.__AD_DEMO_DATA__'
+        $demo | Should -Not -Match 'window\.__AD_AUDIT_DATA__ ='
+
+        $shared = Get-Content -LiteralPath (Join-Path $dashboardRoot 'shared.js') -Raw
+        $shared | Should -Match '__AD_DEMO_DATA__'
+        $shared | Should -Match 'demo-data-banner'
     }
 
     It 'keeps static dashboard shell, imports, and terminology consistent' {
         $dashboardRoot = Join-Path $repoRoot 'dashboard'
         $shared = Get-Content -LiteralPath (Join-Path $dashboardRoot 'shared.js') -Raw
-        $shared | Should Match 'loadAuditData'
-        $shared | Should Match 'setupJsonImport'
-        $shared | Should Match 'updateSortHeaders'
-        $shared | Should Match 'adaudit_banner_dismissed_\$\{currentFile\}'
+        $shared | Should -Match 'loadAuditData'
+        $shared | Should -Match 'setupJsonImport'
+        $shared | Should -Match 'updateSortHeaders'
+        $shared | Should -Match 'adaudit_banner_dismissed_\$\{currentFile\}'
 
         foreach ($pageName in @('auth.html', 'dns.html', 'trusts.html')) {
             $content = Get-Content -LiteralPath (Join-Path $dashboardRoot $pageName) -Raw
-            $content | Should Match 'id="sb-lastrun"'
-            $content | Should Match 'id="sb-target"'
-            $content | Should Match 'sb-progress-fill'
-            $content | Should Match 'type="file"'
-            $content | Should Not Match 'v2\.0 - Blue Team'
-            $content | Should Not Match 'id="sb-time"'
+            $content | Should -Match 'id="sb-lastrun"'
+            $content | Should -Match 'id="sb-target"'
+            $content | Should -Match 'sb-progress-fill'
+            $content | Should -Match 'type="file"'
+            $content | Should -Not -Match 'v2\.0 - Blue Team'
+            $content | Should -Not -Match 'id="sb-time"'
         }
 
         foreach ($page in @(Get-ChildItem -LiteralPath $dashboardRoot -Filter '*.html' | Where-Object { $_.Name -ne 'trust.html' })) {
             $content = Get-Content -LiteralPath $page.FullName -Raw
-            $content | Should Match '<span class="sb-icon">ADO</span><span>AD Objects</span>'
-            $content | Should Match '<span class="sb-icon">KRB</span><span>Kerberos</span>'
-            $content | Should Not Match '<span class="sb-icon">HRD</span><span>Hardening</span>'
-            $content | Should Match '<span class="sb-icon">FIX</span><span>Action Plan</span>'
-            $content | Should Match '<span class="sb-icon">EXC</span><span>Exceptions</span>'
-            $content | Should Match '<span class="sb-icon">TIM</span><span>Timeline</span>'
-            $content | Should Match '<span class="sb-icon">RPT</span><span>Executive</span>'
+            $content | Should -Match '<span class="sb-icon">ADO</span><span>AD Objects</span>'
+            $content | Should -Match '<span class="sb-icon">KRB</span><span>Kerberos</span>'
+            $content | Should -Not -Match '<span class="sb-icon">HRD</span><span>Hardening</span>'
+            $content | Should -Match '<span class="sb-icon">FIX</span><span>Action Plan</span>'
+            $content | Should -Match '<span class="sb-icon">EXC</span><span>Exceptions</span>'
+            $content | Should -Match '<span class="sb-icon">TIM</span><span>Timeline</span>'
+            $content | Should -Match '<span class="sb-icon">RPT</span><span>Executive</span>'
         }
 
-        (Get-Content -LiteralPath (Join-Path $dashboardRoot 'timeline.html') -Raw) | Should Not Match '<script src="bootstrap\.js"'
+        (Get-Content -LiteralPath (Join-Path $dashboardRoot 'timeline.html') -Raw) | Should -Not -Match '<script src="bootstrap\.js"'
     }
 
     It 'writes and verifies SHA-256 sidecar files' {
@@ -379,11 +397,11 @@ Describe 'Dashboard payload' {
         $hash = Write-ADPostureFileHashSidecar -Path $path
         $valid = Test-ADPostureFileHashSidecar -Path $path
 
-        $hash | Should Match '^[A-F0-9]{64}$'
-        $valid.Status | Should Be 'Valid'
+        $hash | Should -Match '^[A-F0-9]{64}$'
+        $valid.Status | Should -Be 'Valid'
 
         Write-ADPostureAtomicTextFile -Path $path -Value '{"ok":false}'
         $mismatch = Test-ADPostureFileHashSidecar -Path $path
-        $mismatch.Status | Should Be 'Mismatch'
+        $mismatch.Status | Should -Be 'Mismatch'
     }
 }

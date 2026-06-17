@@ -1,7 +1,10 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
-. (Join-Path $repoRoot 'src\Private\Get-UacFlagCatalog.ps1')
-. (Join-Path $repoRoot 'src\Private\Get-MembershipRiskScore.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
+    . (Join-Path $repoRoot 'src\Private\Get-UacFlagCatalog.ps1')
+    . (Join-Path $repoRoot 'src\Private\Get-MembershipRiskScore.ps1')
+
+}
 
 Describe 'Membership risk scoring' {
     It 'returns zero for excluded accounts' {
@@ -15,7 +18,7 @@ Describe 'Membership risk scoring' {
             UacRiskBonus = 1.0
         }
 
-        Get-MembershipRiskScore -GroupCatalogEntry $group -Enrichment $enrichment | Should Be 0
+        Get-MembershipRiskScore -GroupCatalogEntry $group -Enrichment $enrichment | Should -Be 0
     }
 
     It 'returns zero for well-known authority principals excluded by SID' {
@@ -30,7 +33,7 @@ Describe 'Membership risk scoring' {
             UacRiskBonus = 0
         }
 
-        Get-MembershipRiskScore -GroupCatalogEntry $group -Enrichment $enrichment | Should Be 0
+        Get-MembershipRiskScore -GroupCatalogEntry $group -Enrichment $enrichment | Should -Be 0
     }
 
     It 'adds nesting and UAC risk without capping the score' {
@@ -44,7 +47,7 @@ Describe 'Membership risk scoring' {
             UacRiskBonus = 0.75
         }
 
-        Get-MembershipRiskScore -GroupCatalogEntry $group -Enrichment $enrichment -NestingDepth 2 -IsDirect:$false | Should Be 6.91
+        Get-MembershipRiskScore -GroupCatalogEntry $group -Enrichment $enrichment -NestingDepth 2 -IsDirect:$false | Should -Be 6.91
     }
 
     It 'explains score components and technical risk' {
@@ -66,11 +69,11 @@ Describe 'Membership risk scoring' {
 
         $assessment = Get-MembershipRiskAssessment -GroupCatalogEntry $group -Enrichment $enrichment -NestingDepth 1 -IsDirect:$false
 
-        $assessment.Score | Should BeGreaterThan 0
-        @($assessment.Components).Count | Should BeGreaterThan 3
-        $assessment.Formula | Should Match ' = '
-        $assessment.TechnicalRisk | Should Match 'service identity'
-        (@($assessment.AttackTechniques).Id -contains 'T1558') | Should Be $true
+        $assessment.Score | Should -BeGreaterThan 0
+        @($assessment.Components).Count | Should -BeGreaterThan 3
+        $assessment.Formula | Should -Match ' = '
+        $assessment.TechnicalRisk | Should -Match 'service identity'
+        (@($assessment.AttackTechniques).Id -contains 'T1558') | Should -Be $true
     }
 
     It 'scores gMSA accounts as service accounts' {
@@ -84,7 +87,7 @@ Describe 'Membership risk scoring' {
             UacRiskBonus = 0
         }
 
-        Get-MembershipRiskScore -GroupCatalogEntry $group -Enrichment $enrichment | Should Be 4.6
+        Get-MembershipRiskScore -GroupCatalogEntry $group -Enrichment $enrichment | Should -Be 4.6
     }
 
     It 'uses configured stale and password-age thresholds in cleanup recommendations' {
@@ -105,7 +108,7 @@ Describe 'Membership risk scoring' {
 
         $actions = Get-CleanupRecommendation -Enrichment $enrichment -GroupName 'Domain Admins' -RiskScore 3
 
-        ($actions -join '; ') | Should Match '180\+ days'
-        ($actions -join '; ') | Should Match '730\+ days'
+        ($actions -join '; ') | Should -Match '180\+ days'
+        ($actions -join '; ') | Should -Match '730\+ days'
     }
 }

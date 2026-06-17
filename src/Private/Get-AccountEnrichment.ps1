@@ -1,16 +1,23 @@
 function Get-AccountEnrichment {
     [CmdletBinding()]
     param(
+        # Accepts ADPrincipal-shaped objects, including fallback member entries produced when
+        # Get-ADGroupMember cannot enumerate a group (foreign security principals, orphaned DNs).
         [Parameter(Mandatory)]
-        [Microsoft.ActiveDirectory.Management.ADPrincipal]$Principal,
+        $Principal,
         [string[]]$DomainControllerDnsNames = @(),
         [ValidateRange(1, 3650)]
         [int]$StaleDays = 90,
         [ValidateRange(0, 3650)]
-        [int]$PasswordAgeDays = 365
+        [int]$PasswordAgeDays = 365,
+        [hashtable]$DomainParams = @{}
     )
 
     $sam = $Principal.SamAccountName
+    $objectSid = $null
+    if ($Principal.SID) {
+        $objectSid = if ($Principal.SID.PSObject.Properties['Value']) { [string]$Principal.SID.Value } else { [string]$Principal.SID }
+    }
     $type = 'Unknown'
     $isService = $false
     $isComputer = $false
@@ -67,12 +74,12 @@ function Get-AccountEnrichment {
             if ($Principal.SamAccountName -match '\$$') {
                 $isComputer = $true
                 $type = 'Computer'
-                $detail = Get-ADComputer -Identity $Principal.DistinguishedName -Properties $computerProps -ErrorAction SilentlyContinue
+                $detail = Get-ADComputer -Identity $Principal.DistinguishedName -Properties $computerProps @DomainParams -ErrorAction SilentlyContinue
             }
             else {
                 $isUser = $true
                 $type = 'User'
-                $detail = Get-ADUser -Identity $Principal.DistinguishedName -Properties $userProps -ErrorAction SilentlyContinue
+                $detail = Get-ADUser -Identity $Principal.DistinguishedName -Properties $userProps @DomainParams -ErrorAction SilentlyContinue
             }
 
             if ($detail) {
@@ -119,7 +126,7 @@ function Get-AccountEnrichment {
         'Computer' {
             $isComputer = $true
             $type = 'Computer'
-            $comp = Get-ADComputer -Identity $Principal.DistinguishedName -Properties $computerProps -ErrorAction SilentlyContinue
+            $comp = Get-ADComputer -Identity $Principal.DistinguishedName -Properties $computerProps @DomainParams -ErrorAction SilentlyContinue
             if ($comp) {
                 $enabled = $comp.Enabled
                 $isDisabled = -not $comp.Enabled
@@ -152,7 +159,7 @@ function Get-AccountEnrichment {
         { $_ -in @('GroupManagedServiceAccount', 'ManagedServiceAccount') } {
             $isService = $true
             $type = $principalType.AccountType
-            $detail = Get-ADServiceAccount -Identity $Principal.DistinguishedName -Properties $serviceAccountProps -ErrorAction SilentlyContinue
+            $detail = Get-ADServiceAccount -Identity $Principal.DistinguishedName -Properties $serviceAccountProps @DomainParams -ErrorAction SilentlyContinue
 
             if ($detail) {
                 $enabled = $detail.Enabled
@@ -189,8 +196,14 @@ function Get-AccountEnrichment {
         if ($null -ne $daysSinceLogon -and $daysSinceLogon -ge $StaleDays) { $isStale = $true }
     }
     elseif ($isUser -or $isService) {
-        $isStale = $true
-        $daysSinceLogon = 9999
+        # No usable logon evidence. Only treat the account as unused when it is old enough to have
+        # logged on; a recently created account without lastLogonTimestamp is not stale yet and must
+        # keep its full risk weight instead of receiving the stale score reduction.
+        $accountAgeDays = if ($whenCreated) { Get-DaysSinceDate -Date $whenCreated } else { $null }
+        if ($null -eq $accountAgeDays -or $accountAgeDays -ge $StaleDays) {
+            $isStale = $true
+            $daysSinceLogon = 9999
+        }
     }
 
     $lastLogonInfo = New-ADAccountDateField -Date $lastLogon
@@ -221,7 +234,7 @@ function Get-AccountEnrichment {
         SamAccountName              = $sam
         DisplayName                 = $Principal.Name
         DistinguishedName           = $Principal.DistinguishedName
-        ObjectSid                   = $Principal.SID.Value
+        ObjectSid                   = $objectSid
         AccountType                 = $type
         IsUser                      = $isUser
         IsServiceAccount            = $isService

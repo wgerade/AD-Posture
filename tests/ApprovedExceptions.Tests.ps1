@@ -1,6 +1,9 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
-. (Join-Path $repoRoot 'src\Private\Resolve-ADPostureApprovedException.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
+    . (Join-Path $repoRoot 'src\Private\Resolve-ADPostureApprovedException.ps1')
+
+}
 
 Describe 'Approved baseline exceptions' {
     It 'matches active exceptions by group and member SamAccountName' {
@@ -28,9 +31,9 @@ Describe 'Approved baseline exceptions' {
 
         $result = Resolve-ADPostureApprovedException -SensitiveGroup 'Domain Admins' -Enrichment $enrichment -Catalog $catalog -AsOf ([datetime]'2026-05-22')
 
-        $result.Id | Should Be 'EXC-001'
-        $result.Status | Should Be 'Active'
-        $result.Owner | Should Be 'Identity Ops'
+        $result.Id | Should -Be 'EXC-001'
+        $result.Status | Should -Be 'Active'
+        $result.Owner | Should -Be 'Identity Ops'
     }
 
     It 'marks expired exceptions without treating them as active baseline' {
@@ -55,8 +58,8 @@ Describe 'Approved baseline exceptions' {
 
         $result = Resolve-ADPostureApprovedException -SensitiveGroup 'Schema Admins' -Enrichment $enrichment -Catalog $catalog -AsOf ([datetime]'2026-05-22')
 
-        $result.Id | Should Be 'EXC-OLD'
-        $result.Status | Should Be 'Expired'
+        $result.Id | Should -Be 'EXC-OLD'
+        $result.Status | Should -Be 'Expired'
     }
 
     It 'matches ACL findings with scoped exception fields' {
@@ -88,8 +91,8 @@ Describe 'Approved baseline exceptions' {
 
         $result = Resolve-ADPostureApprovedFindingException -Finding $finding -Catalog $catalog -AsOf ([datetime]'2026-05-22')
 
-        $result.Id | Should Be 'EXC-ACL-001'
-        $result.Status | Should Be 'Active'
+        $result.Id | Should -Be 'EXC-ACL-001'
+        $result.Status | Should -Be 'Active'
     }
 
     It 'matches GPO findings without allowing membership-only exceptions to match everything' {
@@ -128,7 +131,7 @@ Describe 'Approved baseline exceptions' {
 
         $result = Resolve-ADPostureApprovedFindingException -Finding $finding -Catalog $catalog -AsOf ([datetime]'2026-05-22')
 
-        $result.Id | Should Be 'EXC-GPO-001'
+        $result.Id | Should -Be 'EXC-GPO-001'
     }
 
     It 'matches ADCS findings with scoped template and principal fields' {
@@ -159,8 +162,8 @@ Describe 'Approved baseline exceptions' {
 
         $result = Resolve-ADPostureApprovedFindingException -Finding $finding -Catalog $catalog -AsOf ([datetime]'2026-05-22')
 
-        $result.Id | Should Be 'EXC-ADCS-001'
-        $result.Status | Should Be 'Active'
+        $result.Id | Should -Be 'EXC-ADCS-001'
+        $result.Status | Should -Be 'Active'
     }
 
     It 'matches Kerberos/Auth findings with scoped principal and delegation fields' {
@@ -194,8 +197,8 @@ Describe 'Approved baseline exceptions' {
 
         $result = Resolve-ADPostureApprovedFindingException -Finding $finding -Catalog $catalog -AsOf ([datetime]'2026-05-22')
 
-        $result.Id | Should Be 'EXC-AUTH-001'
-        $result.Status | Should Be 'Active'
+        $result.Id | Should -Be 'EXC-AUTH-001'
+        $result.Status | Should -Be 'Active'
     }
 
     It 'matches Trust findings with scoped trust fields' {
@@ -229,8 +232,40 @@ Describe 'Approved baseline exceptions' {
 
         $result = Resolve-ADPostureApprovedFindingException -Finding $finding -Catalog $catalog -AsOf ([datetime]'2026-05-22')
 
-        $result.Id | Should Be 'EXC-TRUST-001'
-        $result.Status | Should Be 'Active'
+        $result.Id | Should -Be 'EXC-TRUST-001'
+        $result.Status | Should -Be 'Active'
+    }
+
+    It 'ignores membership exceptions without any membership scope field' {
+        $catalog = [pscustomobject]@{
+            Exceptions = @(
+                [pscustomobject]@{
+                    id = 'EXC-UNSCOPED'
+                    enabled = $true
+                    reason = 'Misconfigured entry with metadata only'
+                    owner = 'Identity Ops'
+                    approvedBy = 'CISO'
+                    ticket = 'RISK-9'
+                },
+                [pscustomobject]@{
+                    id = 'EXC-DNS-SCOPED-ONLY'
+                    enabled = $true
+                    findingDomain = 'DNS'
+                    zoneName = 'corp.example'
+                    reason = 'DNS-only exception must not match membership rows'
+                }
+            )
+        }
+        $enrichment = [pscustomobject]@{
+            SamAccountName = 'any.admin'
+            ObjectSid = 'S-1-5-21-77'
+            DistinguishedName = 'CN=any.admin,DC=contoso,DC=com'
+            AccountType = 'User'
+        }
+
+        $result = Resolve-ADPostureApprovedException -SensitiveGroup 'Domain Admins' -Enrichment $enrichment -Catalog $catalog -AsOf ([datetime]'2026-05-22') -WarningAction SilentlyContinue
+
+        $result | Should -BeNullOrEmpty
     }
 
     It 'matches DNS findings with scoped zone and record fields' {
@@ -255,7 +290,7 @@ Describe 'Approved baseline exceptions' {
 
         $result = Resolve-ADPostureApprovedFindingException -Finding $finding -Catalog $catalog -AsOf ([datetime]'2026-05-22')
 
-        $result.Id | Should Be 'EXC-DNS-001'
+        $result.Id | Should -Be 'EXC-DNS-001'
     }
 
 }

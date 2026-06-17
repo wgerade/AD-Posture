@@ -1,5 +1,8 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-$scriptPath = Join-Path $repoRoot 'scripts\Test-ADPostureDnsV2Validation.ps1'
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    $scriptPath = Join-Path $repoRoot 'scripts\Test-ADPostureDnsV2Validation.ps1'
+
+}
 
 Describe 'DNS v2 lab validation helper' {
     It 'summarizes parsed DNS evidence from a payload' {
@@ -35,10 +38,10 @@ Describe 'DNS v2 lab validation helper' {
 
         $summary = & $scriptPath -PayloadPath $path -RequireParsedDnsRecords -PassThru
 
-        $summary.Status | Should Be 'ReadyForLabReview'
-        $summary.Dns.ParsedRecords | Should Be 1
-        $summary.Dns.UnknownBinaryRecords | Should Be 1
-        $summary.Dns.V2FindingCount | Should Be 2
+        $summary.Status | Should -Be 'ReadyForLabReview'
+        $summary.Dns.ParsedRecords | Should -Be 1
+        $summary.Dns.UnknownBinaryRecords | Should -Be 1
+        $summary.Dns.V2FindingCount | Should -Be 2
     }
 
     It 'warns when required DNS parser evidence is missing' {
@@ -50,8 +53,8 @@ Describe 'DNS v2 lab validation helper' {
 
         $summary = & $scriptPath -PayloadPath $path -RequireParsedDnsRecords -PassThru
 
-        $summary.Status | Should Be 'Warning'
-        @($summary.Warnings).Count | Should Be 1
+        $summary.Status | Should -Be 'Warning'
+        @($summary.Warnings).Count | Should -Be 1
     }
 
     It 'writes a JSON summary when requested' {
@@ -65,8 +68,8 @@ Describe 'DNS v2 lab validation helper' {
         & $scriptPath -PayloadPath $path -OutputJson $output
         $written = Get-Content -LiteralPath $output -Raw | ConvertFrom-Json
 
-        $written.Status | Should Be 'ReadyForLabReview'
-        $written.Dns.ParsedRecords | Should Be 1
+        $written.Status | Should -Be 'ReadyForLabReview'
+        $written.Dns.ParsedRecords | Should -Be 1
     }
 
     It 'loads Windows PowerShell payloads with duplicate keys that differ only by case' {
@@ -89,8 +92,8 @@ Describe 'DNS v2 lab validation helper' {
 
         $summary = & $scriptPath -PayloadPath $path -RequireParsedDnsRecords -PassThru
 
-        $summary.Status | Should Be 'ReadyForLabReview'
-        $summary.Dns.ParsedRecords | Should Be 1
-        $summary.Dns.ParsedTypes[0] | Should Be 'A'
+        $summary.Status | Should -Be 'ReadyForLabReview'
+        $summary.Dns.ParsedRecords | Should -Be 1
+        $summary.Dns.ParsedTypes[0] | Should -Be 'A'
     }
 }

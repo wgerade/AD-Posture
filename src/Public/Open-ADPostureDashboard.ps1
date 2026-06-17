@@ -11,12 +11,14 @@ function Open-ADPostureDashboard {
     if (-not $ReportDirectory) { $ReportDirectory = $cfg.ReportPath }
     Write-Warning "Dashboards contain sensitive AD posture data. Open only on trusted workstations and avoid publishing generated dashboard JSON/JS files."
 
+    Sync-ADPostureDashboardStaticAssets -SourcePath $cfg.DashboardSourcePath -TargetPath $cfg.DashboardPath
+
     $page = switch ($View) {
         'Exceptions' { 'exceptions.html' }
         'ObjectRisk' { 'objects.html' }
         'AdcsPosture' { 'adcs.html' }
         'KerberosAuthPosture' { 'auth.html' }
-        'TrustPosture' { 'trust.html' }
+        'TrustPosture' { 'trusts.html' }
         'DnsPosture' { 'dns.html' }
         'AclPosture' { 'acl.html' }
         'GpoPosture' { 'gpo.html' }
@@ -50,6 +52,32 @@ function Open-ADPostureDashboard {
     }
 
     Start-Process $htmlPath
+}
+
+function Sync-ADPostureDashboardStaticAssets {
+    param(
+        [AllowNull()][AllowEmptyString()]
+        [string]$SourcePath,
+        [AllowNull()][AllowEmptyString()]
+        [string]$TargetPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($SourcePath) -or [string]::IsNullOrWhiteSpace($TargetPath)) { return }
+    if ([System.IO.Path]::GetFullPath($SourcePath).TrimEnd('\') -eq [System.IO.Path]::GetFullPath($TargetPath).TrimEnd('\')) { return }
+    if (-not (Test-Path -LiteralPath $SourcePath -PathType Container)) { return }
+
+    if (-not (Test-Path -LiteralPath $TargetPath)) {
+        New-Item -ItemType Directory -Path $TargetPath -Force -ErrorAction Stop | Out-Null
+    }
+
+    # Generated bundles are produced per environment and must never be copied from the module folder.
+    $generatedNames = @('dashboard-data.js', 'timeline-data.js', 'latest-dashboard.json', 'timeline-comparison.json')
+    foreach ($file in @(Get-ChildItem -LiteralPath $SourcePath -File -ErrorAction Stop | Where-Object { $_.Name -notin $generatedNames })) {
+        $destination = Join-Path $TargetPath $file.Name
+        if (-not (Test-Path -LiteralPath $destination) -or (Get-Item -LiteralPath $destination).LastWriteTimeUtc -lt $file.LastWriteTimeUtc) {
+            Copy-Item -LiteralPath $file.FullName -Destination $destination -Force -ErrorAction Stop
+        }
+    }
 }
 
 function Test-ADPostureDashboardDataRefreshRequired {

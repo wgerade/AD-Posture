@@ -1,5 +1,8 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureAdcsPosture.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureAdcsPosture.ps1')
+
+}
 
 Describe 'ADCS posture model' {
     It 'normalizes certificate template posture attributes' {
@@ -18,12 +21,12 @@ Describe 'ADCS posture model' {
             ControlPrincipals = @()
         })
 
-        $template.DisplayName | Should Be 'User Authentication'
-        $template.EnrolleeSuppliesSubject | Should Be $true
-        $template.ManagerApprovalRequired | Should Be $false
-        $template.ExportablePrivateKey | Should Be $true
-        $template.AutoEnrollmentPrincipals[0] | Should Be 'CONTOSO\Domain Users'
-        $template.ExtendedKeyUsage[0] | Should Be '1.3.6.1.5.5.7.3.2'
+        $template.DisplayName | Should -Be 'User Authentication'
+        $template.EnrolleeSuppliesSubject | Should -Be $true
+        $template.ManagerApprovalRequired | Should -Be $false
+        $template.ExportablePrivateKey | Should -Be $true
+        $template.AutoEnrollmentPrincipals[0] | Should -Be 'CONTOSO\Domain Users'
+        $template.ExtendedKeyUsage[0] | Should -Be '1.3.6.1.5.5.7.3.2'
     }
 
     It 'reports ESC1-like authentication templates with broad enrollment and no issuance gate' {
@@ -44,10 +47,10 @@ Describe 'ADCS posture model' {
         $model = ConvertTo-ADPostureAdcsRiskModel -Domain 'contoso.local' -Templates @($template)
         $finding = @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc1LikeTemplate') | Select-Object -First 1
 
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc1LikeTemplate').Count | Should Be 1
-        $finding.Severity | Should Be 'Critical'
-        $finding.RiskPattern | Should Be 'ESC1-like'
-        $finding.Tags -contains 'BroadEnrollment' | Should Be $true
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc1LikeTemplate').Count | Should -Be 1
+        $finding.Severity | Should -Be 'Critical'
+        $finding.RiskPattern | Should -Be 'ESC1-like'
+        $finding.Tags -contains 'BroadEnrollment' | Should -Be $true
     }
 
     It 'does not report ESC1-like exposure when manager approval is required' {
@@ -67,7 +70,7 @@ Describe 'ADCS posture model' {
 
         $model = ConvertTo-ADPostureAdcsRiskModel -Domain 'contoso.local' -Templates @($template)
 
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc1LikeTemplate').Count | Should Be 0
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc1LikeTemplate').Count | Should -Be 0
     }
 
     It 'reports broad enrollment-agent templates and broad template-control delegation' {
@@ -102,8 +105,8 @@ Describe 'ADCS posture model' {
 
         $model = ConvertTo-ADPostureAdcsRiskModel -Domain 'contoso.local' -Templates $templates
 
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEnrollmentAgentBroadEnrollment').Count | Should Be 1
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsTemplateControlDelegation').Count | Should Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEnrollmentAgentBroadEnrollment').Count | Should -Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsTemplateControlDelegation').Count | Should -Be 1
     }
 
     It 'reports exportable private keys on broadly enrollable authentication templates' {
@@ -123,7 +126,7 @@ Describe 'ADCS posture model' {
 
         $model = ConvertTo-ADPostureAdcsRiskModel -Domain 'contoso.local' -Templates @($template)
 
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsExportableAuthPrivateKey').Count | Should Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsExportableAuthPrivateKey').Count | Should -Be 1
     }
 
     It 'enriches template findings with publishing CAs' {
@@ -152,8 +155,8 @@ Describe 'ADCS posture model' {
         $model = ConvertTo-ADPostureAdcsRiskModel -Domain 'contoso.local' -Templates @($template) -Cas @($ca)
         $finding = @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc1LikeTemplate') | Select-Object -First 1
 
-        $finding.PublishedCaNames[0] | Should Be 'CONTOSO-CA'
-        $finding.Tags -contains 'PublishedToCA' | Should Be $true
+        $finding.PublishedCaNames[0] | Should -Be 'CONTOSO-CA'
+        $finding.Tags -contains 'PublishedToCA' | Should -Be $true
     }
 
     It 'reports Any Purpose and no-EKU templates with broad enrollment and no issuance gate' {
@@ -190,8 +193,8 @@ Describe 'ADCS posture model' {
 
         $model = ConvertTo-ADPostureAdcsRiskModel -Domain 'contoso.local' -Templates $templates
 
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsAnyPurposeBroadEnrollment').Count | Should Be 1
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsNoEkuBroadEnrollment').Count | Should Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsAnyPurposeBroadEnrollment').Count | Should -Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsNoEkuBroadEnrollment').Count | Should -Be 1
     }
 
     It 'reports broad control over Enrollment Services CA and NTAuth objects' {
@@ -212,8 +215,8 @@ Describe 'ADCS posture model' {
 
         $model = ConvertTo-ADPostureAdcsRiskModel -Domain 'contoso.local' -Templates @() -Cas @($ca) -NtAuth $ntAuth
 
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsCaObjectControlDelegation').Count | Should Be 1
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsNtAuthControlDelegation').Count | Should Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsCaObjectControlDelegation').Count | Should -Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsNtAuthControlDelegation').Count | Should -Be 1
     }
 
     It 'reports ESC6 CA SAN configuration and chains it to published authentication templates' {
@@ -245,10 +248,10 @@ Describe 'ADCS posture model' {
         $configFinding = @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsCaAcceptsRequestSan') | Select-Object -First 1
         $chainFinding = @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc6RequestSanChain') | Select-Object -First 1
 
-        $configFinding.EscTechnique | Should Be 'ESC6'
-        $chainFinding.EscTechnique | Should Be 'ESC6'
-        $chainFinding.CaName | Should Be 'CONTOSO-CA'
-        @($chainFinding.AttackPath).Count | Should BeGreaterThan 2
+        $configFinding.EscTechnique | Should -Be 'ESC6'
+        $chainFinding.EscTechnique | Should -Be 'ESC6'
+        $chainFinding.CaName | Should -Be 'CONTOSO-CA'
+        @($chainFinding.AttackPath).Count | Should -BeGreaterThan 2
     }
 
     It 'normalizes CA configuration fields without relying on ACL semantics' {
@@ -266,17 +269,17 @@ Describe 'ADCS posture model' {
             }
         })
 
-        $ca.AcceptsRequestSubjectAltName | Should Be $true
-        $ca.ConfigurationSource | Should Be 'Synthetic'
-        $ca.RequestDisposition | Should Be 3
+        $ca.AcceptsRequestSubjectAltName | Should -Be $true
+        $ca.ConfigurationSource | Should -Be 'Synthetic'
+        $ca.RequestDisposition | Should -Be 3
     }
 
     It 'keeps ADCS semantic checks out of the generic ACL posture module' {
         $aclSource = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'src\Private\ConvertTo-ADAclRiskModel.ps1')
 
-        $aclSource | Should Not Match 'ESC[0-9]'
-        $aclSource | Should Not Match 'CertificateTemplate'
-        $aclSource | Should Not Match 'NTAuth'
+        $aclSource | Should -Not -Match 'ESC[0-9]'
+        $aclSource | Should -Not -Match 'CertificateTemplate'
+        $aclSource | Should -Not -Match 'NTAuth'
     }
 
     It 'reports malicious template permissions with broad enroll, autoenroll, control, and supplied subject' {
@@ -297,11 +300,11 @@ Describe 'ADCS posture model' {
 
         $model = ConvertTo-ADPostureAdcsRiskModel -Domain 'contoso.local' -Templates @($template)
 
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc1LikeTemplate').Count | Should Be 2
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsBroadAuthenticationEnrollment').Count | Should Be 2
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsBroadAuthenticationAutoEnrollment').Count | Should Be 1
-        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsTemplateControlDelegation').Count | Should Be 1
-        @($model.AdcsFindings | Where-Object { $_.Principal -eq 'CONTOSO\Domain Users' -and $_.FindingType -eq 'AdcsTemplateControlDelegation' }).Count | Should Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsEsc1LikeTemplate').Count | Should -Be 2
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsBroadAuthenticationEnrollment').Count | Should -Be 2
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsBroadAuthenticationAutoEnrollment').Count | Should -Be 1
+        @($model.AdcsFindings | Where-Object FindingType -eq 'AdcsTemplateControlDelegation').Count | Should -Be 1
+        @($model.AdcsFindings | Where-Object { $_.Principal -eq 'CONTOSO\Domain Users' -and $_.FindingType -eq 'AdcsTemplateControlDelegation' }).Count | Should -Be 1
     }
 
     It 'extracts enroll, autoenroll, and control principals from template access rules' {
@@ -328,8 +331,8 @@ Describe 'ADCS posture model' {
 
         $access = ConvertFrom-ADPostureAdcsTemplateAccessRules -AccessRules $rules
 
-        $access.EnrollmentPrincipals -contains 'Authenticated Users' | Should Be $true
-        $access.AutoEnrollmentPrincipals -contains 'WSG\Domain Users' | Should Be $true
-        $access.ControlPrincipals -contains 'WSG\Domain Users' | Should Be $true
+        $access.EnrollmentPrincipals -contains 'Authenticated Users' | Should -Be $true
+        $access.AutoEnrollmentPrincipals -contains 'WSG\Domain Users' | Should -Be $true
+        $access.ControlPrincipals -contains 'WSG\Domain Users' | Should -Be $true
     }
 }

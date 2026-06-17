@@ -1,5 +1,8 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\ConvertTo-ADObjectRiskModel.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\ConvertTo-ADObjectRiskModel.ps1')
+
+}
 
 Describe 'Object risk model' {
     It 'builds object summaries, evidence, and relationships from findings' {
@@ -37,25 +40,25 @@ Describe 'Object risk model' {
 
         $model = ConvertTo-ADObjectRiskModel -Findings $findings -Domain 'contoso.local'
 
-        @($model.Objects).Count | Should Be 1
-        @($model.ObjectEvidence).Count | Should Be 1
-        @($model.ObjectRelationships).Count | Should Be 1
+        @($model.Objects).Count | Should -Be 1
+        @($model.ObjectEvidence).Count | Should -Be 1
+        @($model.ObjectRelationships).Count | Should -Be 1
 
         $member = $model.Objects | Where-Object ObjectSid -eq 'S-1-5-21-1000-1000-1000-1101'
-        $member.RiskScore | Should Be 8.25
-        $member.Severity | Should Be 'High'
-        $member.Tags -contains 'Tier0Exposure' | Should Be $true
-        $member.Tags -contains 'PrivilegedMembership' | Should Be $true
-        $member.Tags -contains 'IndirectPrivilege' | Should Be $true
-        $member.Tags -contains 'StaleIdentity' | Should Be $true
-        $member.Tags -contains 'PasswordNeverExpires' | Should Be $true
-        $member.Tags -contains 'DelegationRisk' | Should Be $true
-        $member.Tags -contains 'ServiceAccount' | Should Be $true
-        @($member.EvidenceIds).Count | Should Be 1
+        $member.RiskScore | Should -Be 8.25
+        $member.Severity | Should -Be 'High'
+        $member.Tags -contains 'Tier0Exposure' | Should -Be $true
+        $member.Tags -contains 'PrivilegedMembership' | Should -Be $true
+        $member.Tags -contains 'IndirectPrivilege' | Should -Be $true
+        $member.Tags -contains 'StaleIdentity' | Should -Be $true
+        $member.Tags -contains 'PasswordNeverExpires' | Should -Be $true
+        $member.Tags -contains 'DelegationRisk' | Should -Be $true
+        $member.Tags -contains 'ServiceAccount' | Should -Be $true
+        @($member.EvidenceIds).Count | Should -Be 1
 
-        $model.ObjectEvidence[0].EvidenceType | Should Be 'SensitiveGroupMembership'
-        $model.ObjectEvidence[0].RelatedObjectName | Should Be 'Domain Admins'
-        $model.ObjectRelationships[0].RelationshipType | Should Be 'SensitiveGroupMembership'
+        $model.ObjectEvidence[0].EvidenceType | Should -Be 'SensitiveGroupMembership'
+        $model.ObjectEvidence[0].RelatedObjectName | Should -Be 'Domain Admins'
+        $model.ObjectRelationships[0].RelationshipType | Should -Be 'SensitiveGroupMembership'
     }
 
     It 'aggregates multiple findings for the same object' {
@@ -79,10 +82,10 @@ Describe 'Object risk model' {
         $model = ConvertTo-ADObjectRiskModel -Findings $findings -Domain 'contoso.local'
         $member = $model.Objects | Where-Object ObjectSid -eq 'S-1-5-21-1000-1000-1000-1102'
 
-        $member.RiskScore | Should Be 7.5
-        @($member.EvidenceIds).Count | Should Be 2
-        @($model.ObjectEvidence).Count | Should Be 2
-        @($model.ObjectRelationships).Count | Should Be 2
+        $member.RiskScore | Should -Be 7.5
+        @($member.EvidenceIds).Count | Should -Be 2
+        @($model.ObjectEvidence).Count | Should -Be 2
+        @($model.ObjectRelationships).Count | Should -Be 2
     }
 
     It 'adds Kerberos/Auth findings to object risk summaries' {
@@ -115,12 +118,12 @@ Describe 'Object risk model' {
 
         $model = ConvertTo-ADObjectRiskModel -KerberosAuthFindings $authFindings -Domain 'contoso.local'
 
-        @($model.Objects).Count | Should Be 1
-        @($model.ObjectEvidence).Count | Should Be 1
-        $model.Objects[0].SamAccountName | Should Be 'svc-sql'
-        $model.Objects[0].Tags -contains 'Kerberoast' | Should Be $true
-        $model.ObjectEvidence[0].SourceDomain | Should Be 'KerberosAuth'
-        $model.ObjectEvidence[0].KerberosAuthFindingId | Should Be 'auth-000001'
+        @($model.Objects).Count | Should -Be 1
+        @($model.ObjectEvidence).Count | Should -Be 1
+        $model.Objects[0].SamAccountName | Should -Be 'svc-sql'
+        $model.Objects[0].Tags -contains 'Kerberoast' | Should -Be $true
+        $model.ObjectEvidence[0].SourceDomain | Should -Be 'KerberosAuth'
+        $model.ObjectEvidence[0].KerberosAuthFindingId | Should -Be 'auth-000001'
     }
 
     It 'adds Trust findings to object risk summaries' {
@@ -150,15 +153,15 @@ Describe 'Object risk model' {
 
         $model = ConvertTo-ADObjectRiskModel -TrustFindings $trustFindings -Domain 'contoso.local'
 
-        @($model.Objects).Count | Should Be 1
-        @($model.ObjectEvidence).Count | Should Be 1
-        @($model.ObjectRelationships).Count | Should Be 1
-        $model.Objects[0].ObjectClass | Should Be 'trustedDomain'
-        $model.Objects[0].Tags -contains 'TrustBoundary' | Should Be $true
-        $model.Objects[0].PrivilegeTier | Should Be 'Tier 0'
-        $model.ObjectEvidence[0].SourceDomain | Should Be 'Trust'
-        $model.ObjectEvidence[0].TrustFindingId | Should Be 'trust-000001'
-        $model.ObjectRelationships[0].RelationshipType | Should Be 'TrustSidFilteringDisabled'
+        @($model.Objects).Count | Should -Be 1
+        @($model.ObjectEvidence).Count | Should -Be 1
+        @($model.ObjectRelationships).Count | Should -Be 1
+        $model.Objects[0].ObjectClass | Should -Be 'trustedDomain'
+        $model.Objects[0].Tags -contains 'TrustBoundary' | Should -Be $true
+        $model.Objects[0].PrivilegeTier | Should -Be 'Tier 0'
+        $model.ObjectEvidence[0].SourceDomain | Should -Be 'Trust'
+        $model.ObjectEvidence[0].TrustFindingId | Should -Be 'trust-000001'
+        $model.ObjectRelationships[0].RelationshipType | Should -Be 'TrustSidFilteringDisabled'
     }
 
     It 'adds DNS findings to object risk summaries' {
@@ -179,10 +182,10 @@ Describe 'Object risk model' {
         })
         $model = ConvertTo-ADObjectRiskModel -DnsFindings $dnsFindings -Domain 'contoso.local'
 
-        @($model.Objects).Count | Should Be 1
-        @($model.ObjectEvidence).Count | Should Be 1
-        @($model.ObjectEvidence | Where-Object SourceDomain -eq 'DNS').Count | Should Be 1
-        ($model.Objects | Where-Object DisplayName -eq '*.contoso.local').Tags -contains 'DnsPosture' | Should Be $true
+        @($model.Objects).Count | Should -Be 1
+        @($model.ObjectEvidence).Count | Should -Be 1
+        @($model.ObjectEvidence | Where-Object SourceDomain -eq 'DNS').Count | Should -Be 1
+        ($model.Objects | Where-Object DisplayName -eq '*.contoso.local').Tags -contains 'DnsPosture' | Should -Be $true
     }
 
     It 'keeps native and excluded architecture objects out of the actionable object queue' {
@@ -212,9 +215,9 @@ Describe 'Object risk model' {
 
         $model = ConvertTo-ADObjectRiskModel -Findings $findings -Domain 'contoso.local'
 
-        @($model.Objects).Count | Should Be 0
-        @($model.ObjectEvidence).Count | Should Be 0
-        @($model.ObjectRelationships).Count | Should Be 0
+        @($model.Objects).Count | Should -Be 0
+        @($model.ObjectEvidence).Count | Should -Be 0
+        @($model.ObjectRelationships).Count | Should -Be 0
     }
 
     It 'keeps built-in ACL targets out of the object queue while preserving custom trustees' {
@@ -240,10 +243,10 @@ Describe 'Object risk model' {
 
         $model = ConvertTo-ADObjectRiskModel -Findings @() -AclFindings $aclFindings -Domain 'contoso.local'
 
-        @($model.Objects | Where-Object DisplayName -eq 'Domain Admins').Count | Should Be 0
-        @($model.Objects | Where-Object DisplayName -eq 'Group Operators').Count | Should Be 1
-        @($model.ObjectEvidence).Count | Should Be 1
-        @($model.ObjectRelationships).Count | Should Be 1
+        @($model.Objects | Where-Object DisplayName -eq 'Domain Admins').Count | Should -Be 0
+        @($model.Objects | Where-Object DisplayName -eq 'Group Operators').Count | Should -Be 1
+        @($model.ObjectEvidence).Count | Should -Be 1
+        @($model.ObjectRelationships).Count | Should -Be 1
     }
 
     It 'keeps broad ACL trustees out of the object queue and labels GPO targets clearly' {
@@ -270,13 +273,13 @@ Describe 'Object risk model' {
 
         $model = ConvertTo-ADObjectRiskModel -Findings @() -AclFindings $aclFindings -Domain 'contoso.local'
 
-        @($model.Objects).Count | Should Be 1
-        $model.Objects[0].DisplayName | Should Be 'GPO: Everyone'
-        $model.Objects[0].ObjectClass | Should Be 'groupPolicyContainer'
-        $model.Objects[0].ObjectRoles -contains 'AclTarget' | Should Be $true
-        @($model.Objects | Where-Object { $_.DisplayName -eq 'Everyone' -and $_.ObjectClass -eq 'wellKnownPrincipal' }).Count | Should Be 0
-        @($model.ObjectEvidence).Count | Should Be 1
-        @($model.ObjectRelationships).Count | Should Be 1
+        @($model.Objects).Count | Should -Be 1
+        $model.Objects[0].DisplayName | Should -Be 'GPO: Everyone'
+        $model.Objects[0].ObjectClass | Should -Be 'groupPolicyContainer'
+        $model.Objects[0].ObjectRoles -contains 'AclTarget' | Should -Be $true
+        @($model.Objects | Where-Object { $_.DisplayName -eq 'Everyone' -and $_.ObjectClass -eq 'wellKnownPrincipal' }).Count | Should -Be 0
+        @($model.ObjectEvidence).Count | Should -Be 1
+        @($model.ObjectRelationships).Count | Should -Be 1
     }
 
     It 'preserves ACL inheritance and object-type details in object evidence' {
@@ -311,16 +314,16 @@ Describe 'Object risk model' {
         $model = ConvertTo-ADObjectRiskModel -Findings @() -AclFindings $aclFindings -Domain 'contoso.local'
         $evidence = $model.ObjectEvidence[0]
 
-        $evidence.ObjectType | Should Be 'f3531ec6-6330-4f8e-8d39-7a671fbac605'
-        $evidence.ObjectTypeName | Should Be 'ms-LAPS-Encrypted-Password-Attributes'
-        $evidence.InheritedObjectType | Should Be 'bf967a86-0de6-11d0-a285-00aa003049e2'
-        $evidence.InheritedObjectTypeName | Should Be 'Computer'
-        $evidence.InheritanceType | Should Be 'All'
-        $evidence.ObjectFlags | Should Be 'ObjectAceTypePresent, InheritedObjectAceTypePresent'
-        $evidence.InheritanceFlags | Should Be 'ContainerInherit'
-        $evidence.PropagationFlags | Should Be 'None'
-        $evidence.AccessControlType | Should Be 'Allow'
-        $evidence.IsInherited | Should Be $true
+        $evidence.ObjectType | Should -Be 'f3531ec6-6330-4f8e-8d39-7a671fbac605'
+        $evidence.ObjectTypeName | Should -Be 'ms-LAPS-Encrypted-Password-Attributes'
+        $evidence.InheritedObjectType | Should -Be 'bf967a86-0de6-11d0-a285-00aa003049e2'
+        $evidence.InheritedObjectTypeName | Should -Be 'Computer'
+        $evidence.InheritanceType | Should -Be 'All'
+        $evidence.ObjectFlags | Should -Be 'ObjectAceTypePresent, InheritedObjectAceTypePresent'
+        $evidence.InheritanceFlags | Should -Be 'ContainerInherit'
+        $evidence.PropagationFlags | Should -Be 'None'
+        $evidence.AccessControlType | Should -Be 'Allow'
+        $evidence.IsInherited | Should -Be $true
     }
 
     It 'preserves owner and source descriptor details in object evidence' {
@@ -356,12 +359,12 @@ Describe 'Object risk model' {
         $model = ConvertTo-ADObjectRiskModel -Findings @() -AclFindings $aclFindings -Domain 'contoso.local'
         $evidence = $model.ObjectEvidence[0]
 
-        $evidence.EvidenceType | Should Be 'SensitiveAclOwner'
-        $evidence.OwnerName | Should Be 'CONTOSO\HelpdeskUser'
-        $evidence.OwnerSid | Should Be 'S-1-5-21-1000-1000-1000-4401'
-        $evidence.OwnerDistinguishedName | Should Be 'CN=HelpdeskUser,OU=Helpdesk,DC=contoso,DC=local'
-        $evidence.OwnerObjectClass | Should Be 'user'
-        $evidence.SourceDescriptorId | Should Be 'CN=AXZ,CN=Users,DC=contoso,DC=local'
+        $evidence.EvidenceType | Should -Be 'SensitiveAclOwner'
+        $evidence.OwnerName | Should -Be 'CONTOSO\HelpdeskUser'
+        $evidence.OwnerSid | Should -Be 'S-1-5-21-1000-1000-1000-4401'
+        $evidence.OwnerDistinguishedName | Should -Be 'CN=HelpdeskUser,OU=Helpdesk,DC=contoso,DC=local'
+        $evidence.OwnerObjectClass | Should -Be 'user'
+        $evidence.SourceDescriptorId | Should -Be 'CN=AXZ,CN=Users,DC=contoso,DC=local'
     }
 
     It 'aggregates Windows LAPS attribute ACLs in the object risk model' {
@@ -395,17 +398,17 @@ Describe 'Object risk model' {
         $directEvidence = $model.ObjectEvidence | Where-Object EvidenceType -eq 'SensitiveAcl'
         $effectiveEvidence = $model.ObjectEvidence | Where-Object EvidenceType -eq 'SensitiveAclEffectiveTrustee'
 
-        $target.RiskScore | Should Be 6
-        $target.RelationshipCount | Should Be 2
-        @($directEvidence).Count | Should Be 1
-        @($effectiveEvidence).Count | Should Be 1
-        $directEvidence.AggregatedFindingCount | Should Be 2
-        $directEvidence.IsAggregatedAclEvidence | Should Be $true
-        $directEvidence.ObjectTypeName | Should Be 'msLAPS-EncryptedPassword, msLAPS-Password'
-        $directEvidence.AclFindingIds -contains 'acl-000101' | Should Be $true
-        $directEvidence.AclFindingIds -contains 'acl-000102' | Should Be $true
-        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'WindowsLapsControl').Count | Should Be 1
-        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'EffectiveWindowsLapsControl').Count | Should Be 1
+        $target.RiskScore | Should -Be 6
+        $target.RelationshipCount | Should -Be 2
+        @($directEvidence).Count | Should -Be 1
+        @($effectiveEvidence).Count | Should -Be 1
+        $directEvidence.AggregatedFindingCount | Should -Be 2
+        $directEvidence.IsAggregatedAclEvidence | Should -Be $true
+        $directEvidence.ObjectTypeName | Should -Be 'msLAPS-EncryptedPassword, msLAPS-Password'
+        $directEvidence.AclFindingIds -contains 'acl-000101' | Should -Be $true
+        $directEvidence.AclFindingIds -contains 'acl-000102' | Should -Be $true
+        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'WindowsLapsControl').Count | Should -Be 1
+        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'EffectiveWindowsLapsControl').Count | Should -Be 1
     }
 
     It 'models effective ACL exposure separately from the direct ACE trustee' {
@@ -443,23 +446,23 @@ Describe 'Object risk model' {
 
         $model = ConvertTo-ADObjectRiskModel -Findings @() -AclFindings $aclFindings -Domain 'contoso.local'
 
-        @($model.ObjectEvidence | Where-Object EvidenceType -eq 'SensitiveAcl').Count | Should Be 1
-        @($model.ObjectEvidence | Where-Object EvidenceType -eq 'SensitiveAclEffectiveTrustee').Count | Should Be 1
+        @($model.ObjectEvidence | Where-Object EvidenceType -eq 'SensitiveAcl').Count | Should -Be 1
+        @($model.ObjectEvidence | Where-Object EvidenceType -eq 'SensitiveAclEffectiveTrustee').Count | Should -Be 1
 
         $directEvidence = $model.ObjectEvidence | Where-Object EvidenceType -eq 'SensitiveAcl'
         $effectiveEvidence = $model.ObjectEvidence | Where-Object EvidenceType -eq 'SensitiveAclEffectiveTrustee'
         $effectiveObject = $model.Objects | Where-Object DisplayName -eq 'svc-deploy'
 
-        $directEvidence.RelatedObjectName | Should Be 'ACL Delegated Admins'
-        $effectiveEvidence.DirectAclEvidenceId | Should Be $directEvidence.EvidenceId
-        $effectiveEvidence.DirectTrusteeName | Should Be 'ACL Delegated Admins'
-        $effectiveEvidence.EffectiveTrusteeName | Should Be 'svc-deploy'
-        $effectiveEvidence.Path | Should Be 'svc-deploy -> ACL Delegated Admins -> WriteDacl -> AdminSDHolder'
-        $effectiveObject.Tags -contains 'EffectiveAclExposure' | Should Be $true
-        $effectiveObject.Tags -contains 'EffectiveTrustee' | Should Be $true
+        $directEvidence.RelatedObjectName | Should -Be 'ACL Delegated Admins'
+        $effectiveEvidence.DirectAclEvidenceId | Should -Be $directEvidence.EvidenceId
+        $effectiveEvidence.DirectTrusteeName | Should -Be 'ACL Delegated Admins'
+        $effectiveEvidence.EffectiveTrusteeName | Should -Be 'svc-deploy'
+        $effectiveEvidence.Path | Should -Be 'svc-deploy -> ACL Delegated Admins -> WriteDacl -> AdminSDHolder'
+        $effectiveObject.Tags -contains 'EffectiveAclExposure' | Should -Be $true
+        $effectiveObject.Tags -contains 'EffectiveTrustee' | Should -Be $true
 
-        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'WriteDacl').Count | Should Be 1
-        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'EffectiveAclTrusteeMembership').Count | Should Be 1
-        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'EffectiveWriteDacl').Count | Should Be 1
+        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'WriteDacl').Count | Should -Be 1
+        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'EffectiveAclTrusteeMembership').Count | Should -Be 1
+        @($model.ObjectRelationships | Where-Object RelationshipType -eq 'EffectiveWriteDacl').Count | Should -Be 1
     }
 }
