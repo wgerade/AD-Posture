@@ -1,5 +1,6 @@
-/* Synthetic demo data for the public AD Posture guided tour. Safe for screenshots and GitHub Pages. */
-window.__AD_AUDIT_DATA__ = {
+/* Synthetic demo data for the public AD Posture guided tour. Safe for screenshots and GitHub Pages.
+   This bundle is only used as a last-resort fallback when no generated audit data is available. */
+window.__AD_DEMO_DATA__ = {
   findings: [
     {
       Timestamp: '2026-06-10T09:00:00-05:00', Domain: 'corp.example', SensitiveGroup: 'Domain Admins', GroupTier: 'Domain', PrivilegeTier: 'Tier 0', PrivilegeTierReason: 'Domain Admins', GroupRiskWeight: 5,

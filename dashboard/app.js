@@ -24,6 +24,27 @@ const TIER_COLORS = { 'Tier 0': '#ef4444', 'Tier 1': '#f59e0b', 'Tier 2': '#3b82
 const DIFFICULTY_COLORS = { Low: '#22c55e', Medium: '#f59e0b', High: '#ef4444' };
 const TYPE_COLORS = { User: '#60a5fa', ServiceAccount: '#a78bfa', Computer: '#34d399', Group: '#f472b6', Unknown: '#94a3b8' };
 
+function buildFindingLabelIndex(raw) {
+  const index = {};
+  const add = (rows, toLabel) => (rows || []).forEach(row => {
+    const id = row.FindingId || row.findingId;
+    if (!id || index[id]) return;
+    const label = toLabel(row);
+    if (label) index[id] = label;
+  });
+
+  const allMembership = [].concat(raw.findings || raw.Findings || [], raw.monitoring || [], raw.exceptions || []);
+  add(allMembership, f => [f.MemberSam || f.MemberDisplay, f.SensitiveGroup].filter(Boolean).join(' in '));
+  add(raw.aclFindings, f => [f.TrusteeName || f.TrusteeSid, f.NormalizedRight, f.TargetName].filter(Boolean).join(' / '));
+  add(raw.gpoFindings, f => [f.GpoName, f.ScopeName].filter(Boolean).join(' @ '));
+  add(raw.adcsFindings, f => f.TemplateName || f.CaName || f.TargetObjectName);
+  add(raw.kerberosAuthFindings, f => f.PrincipalSam || f.Principal);
+  add(raw.trustFindings, f => f.TrustName || f.TrustPartner);
+  add(raw.dnsFindings, f => [f.ZoneName, f.RecordName].filter(Boolean).join(' / '));
+  add(raw.identityRiskFindings, f => f.PrincipalSam || f.Principal || f.MemberSam);
+  return index;
+}
+
 function normalizeState(raw) {
   if (!raw) return { meta: {}, groups: [], findings: [] };
   const sourceMeta = raw.meta || {};
@@ -43,7 +64,8 @@ function normalizeState(raw) {
     objects: raw.objects || raw.Objects || [],
     objectEvidence: raw.objectEvidence || raw.ObjectEvidence || [],
     objectRelationships: raw.objectRelationships || raw.ObjectRelationships || [],
-    remediationPlaybooks: raw.remediationPlaybooks || raw.RemediationPlaybooks || []
+    remediationPlaybooks: raw.remediationPlaybooks || raw.RemediationPlaybooks || [],
+    findingLabels: buildFindingLabelIndex(raw)
   };
 }
 
@@ -745,18 +767,30 @@ function renderOperationalViews() {
   applyGenericSorts();
 }
 
+function playbookLabel(pb) {
+  const findingId = pb.FindingId || pb.findingId || '';
+  return (state.findingLabels && state.findingLabels[findingId]) ||
+    pb.FindingType || pb.findingType ||
+    (findingId ? `Finding ${String(findingId).substring(0, 8)}` : 'Finding');
+}
+
 function renderPlaybooks() {
   const tbody = document.querySelector('#playbooks-table tbody');
   if (!tbody) return;
   const playbooks = state.remediationPlaybooks || [];
-  tbody.innerHTML = playbooks.slice(0, 50).map(pb => `
+  const limit = 50;
+  tbody.innerHTML = playbooks.slice(0, limit).map(pb => `
     <tr id="${esc(pb.PlaybookId || pb.playbookId || '')}">
       <td>${esc(pb.FindingDomain || pb.findingDomain || '-')}</td>
-      <td>${esc(pb.FindingType || pb.findingType || '-')}<br><small class="sub">${esc(pb.FindingId || pb.findingId || '')}</small></td>
+      <td title="${esc(pb.FindingId || pb.findingId || '')}">${esc(playbookLabel(pb))}<br><small class="sub">${esc(pb.FindingType || pb.findingType || '')}</small></td>
       <td>${pb.CanGenerateScript || pb.canGenerateScript ? '<span class="badge good">WhatIf script</span>' : `<span class="badge warn">Blocked</span><br><small class="sub">${esc(pb.BlockedReason || pb.blockedReason || '')}</small>`}</td>
       <td class="wrap"><small>${esc(pb.ExpectedImpact || pb.expectedImpact || '')}</small></td>
       <td><button class="secondary action-playbook" data-playbook="${esc(pb.PlaybookId || pb.playbookId || '')}">Open</button></td>
     </tr>`).join('') || '<tr><td colspan="5"><div class="table-empty">No playbooks were generated for this report.</div></td></tr>';
+
+  if (playbooks.length > limit) {
+    tbody.insertAdjacentHTML('beforeend', `<tr class="table-more-row"><td colspan="5"><small class="sub">Showing the first ${limit} of ${playbooks.length} playbooks. Use the Playbook link on a finding to jump straight to it.</small></td></tr>`);
+  }
 
   tbody.querySelectorAll('[data-playbook]').forEach(button => {
     button.addEventListener('click', () => showPlaybook(button.dataset.playbook));
@@ -779,11 +813,14 @@ function showPlaybook(playbookId) {
   document.getElementById('script-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+let findingsRenderLimit = 300;
+
 function renderFindings() {
   const tbody = document.querySelector('#findings-table tbody');
   tbody.innerHTML = '';
   const rows = filteredFindings().sort(compareFindings);
   rows
+    .slice(0, findingsRenderLimit)
     .forEach(f => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -827,6 +864,16 @@ function renderFindings() {
     return;
   }
 
+  if (rows.length > findingsRenderLimit) {
+    const tr = document.createElement('tr');
+    tr.className = 'table-more-row';
+    tr.innerHTML = `<td colspan="12"><button type="button" class="secondary" id="findings-show-more">Show 300 more (showing ${findingsRenderLimit} of ${rows.length})</button></td>`;
+    tbody.appendChild(tr);
+    tr.querySelector('#findings-show-more').addEventListener('click', () => {
+      findingsRenderLimit += 300;
+      renderFindings();
+    });
+  }
 }
 
 function populateFilters() {

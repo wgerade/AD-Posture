@@ -1,5 +1,6 @@
-/* Synthetic demo timeline data for the public AD Posture guided tour. */
-window.__AD_TIMELINE_DATA__ = {
+/* Synthetic demo timeline data for the public AD Posture guided tour.
+   This bundle is only used as a last-resort fallback when no generated timeline data is available. */
+window.__AD_DEMO_TIMELINE_DATA__ = {
   ScoreBefore: 42.6,
   ScoreAfter: 37.0,
   ScoreDelta: -5.6,
