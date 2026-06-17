@@ -14,8 +14,8 @@
   --border: #33435f;
   --border-soft: rgba(148, 163, 184, 0.22);
   --text: #f8fafc;
-  --muted: #cbd5e1;
-  --subtle: #94a3b8;
+  --muted: #d4dde9;
+  --subtle: #aab6c8;
   --risk: #fb7185;
   --danger: #fb7185;
   --risk-strong: #f43f5e;
@@ -65,8 +65,8 @@ html[data-theme="light"] {
   --border: #c4d2e2;
   --border-soft: rgba(71, 85, 105, 0.22);
   --text: #0f172a;
-  --muted: #475569;
-  --subtle: #64748b;
+  --muted: #334155;
+  --subtle: #475569;
   --risk: #be123c;
   --danger: #be123c;
   --risk-strong: #9f1239;
@@ -155,7 +155,7 @@ button {
   background: var(--surface-2);
   color: var(--muted);
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -186,7 +186,7 @@ body.sidebar-collapsed .sb-header {
   display: inline-block;
   margin-top: 6px;
   color: var(--accent);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -264,7 +264,7 @@ body.sidebar-collapsed .sb-header {
 .sb-logo-ver,
 .sb-domain-sub,
 .sb-footer-label {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .sb-domain {
@@ -301,7 +301,7 @@ body.sidebar-collapsed .sb-header {
 .sb-section-label {
   padding: 16px 10px 7px;
   color: var(--subtle);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 760;
   letter-spacing: 0.055em;
   text-transform: uppercase;
@@ -338,7 +338,7 @@ body.sidebar-collapsed .sb-header {
   border-radius: var(--radius);
   background: var(--surface-2);
   color: var(--subtle);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 850;
   letter-spacing: 0.02em;
   flex: 0 0 auto;
@@ -743,7 +743,7 @@ button.action-script:hover,
   border-radius: 50%;
   background: color-mix(in srgb, var(--text) 10%, transparent);
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 850;
 }
 
@@ -803,7 +803,7 @@ button.action-script:hover,
 .ring-lbl {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .score-info {
@@ -855,7 +855,7 @@ th,
 .score-context em,
 .metric-pair em {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 800;
   letter-spacing: 0.03em;
@@ -1006,7 +1006,7 @@ th,
 .metric-unit {
   margin-left: 4px;
   color: var(--muted);
-  font-size: 0.66em;
+  font-size: 0.8em;
   font-weight: 760;
 }
 
@@ -1218,7 +1218,7 @@ th,
 .profile-score-label {
   grid-area: label;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 820;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1393,6 +1393,7 @@ th,
 
 .table-scroll {
   overflow: auto;
+  max-height: 65vh;
   border-top: 1px solid var(--border-soft);
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   scrollbar-color: var(--accent-str) var(--surface-2);
@@ -1487,12 +1488,12 @@ tbody tr:hover td,
 }
 
 .sorted-asc::after {
-  content: " â†‘";
+  content: " \2191";
   color: var(--trust);
 }
 
 .sorted-desc::after {
-  content: " â†“";
+  content: " \2193";
   color: var(--trust);
 }
 
@@ -1529,6 +1530,12 @@ td small,
 .rank-main strong,
 .rank-main span {
   overflow-wrap: anywhere;
+}
+
+/* Readability floor: <small> uses the browser "smaller" keyword (~10px in 12px tables),
+   which bypassed the explicit font-size floor. Pin it so report text stays >= 12px. */
+small {
+  font-size: 12px;
 }
 
 .link-button {
@@ -1878,7 +1885,7 @@ td small,
 
 #os-table .os-values-cell span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -2184,7 +2191,7 @@ td small,
   height: 17px;
   background: color-mix(in srgb, var(--muted) 72%, var(--surface-2));
   color: var(--surface);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 850;
 }
 
@@ -2313,7 +2320,7 @@ tbody tr:hover td,
   width: 30px;
   height: 30px;
   border-radius: 7px;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .sb-logo-text {
@@ -2328,13 +2335,13 @@ tbody tr:hover td,
 }
 
 .sb-domain-name {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .sb-logo-ver,
 .sb-domain-sub,
 .sb-footer-label {
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .sb-nav {
@@ -2343,7 +2350,7 @@ tbody tr:hover td,
 
 .sb-section-label {
   padding: 9px 7px 4px;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .sb-item {
@@ -2359,7 +2366,7 @@ tbody tr:hover td,
   width: 29px;
   height: 21px;
   border-radius: 6px;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .sb-footer {
@@ -2394,7 +2401,7 @@ tbody tr:hover td,
 }
 
 .topbar-sub {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .topbar-tabs {
@@ -2404,7 +2411,7 @@ tbody tr:hover td,
 .topbar-tab {
   min-height: 29px;
   padding: 4px 7px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .search-box,
@@ -2428,7 +2435,7 @@ button.action-script,
 .next-action-button {
   gap: 5px;
   padding: 5px 9px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .search-box {
@@ -2447,7 +2454,7 @@ button.action-script,
 .content > .security-banner {
   min-height: 28px;
   border-radius: var(--radius);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.3;
 }
 
@@ -2474,7 +2481,7 @@ button.action-script,
 
 .scope-option,
 .btn-clear-filters {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .filter-summary {
@@ -2485,7 +2492,7 @@ button.action-script,
 .filter-chip,
 .filter-clear {
   min-height: 24px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .score-hero {
@@ -2512,7 +2519,7 @@ button.action-script,
 .chart-tile h3,
 th,
 .next-action-label {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .score-kpi-val {
@@ -2523,7 +2530,7 @@ th,
 .score-kpi-sub {
   gap: 5px;
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .score-context {
@@ -2537,7 +2544,7 @@ th,
 }
 
 .score-progress-pct {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .next-action {
@@ -2553,7 +2560,7 @@ th,
 .next-action-meta,
 .next-action-accounts {
   margin-top: 4px;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .next-action-stats {
@@ -2563,7 +2570,7 @@ th,
 
 .next-action-stats span {
   padding: 4px 6px;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .next-action-stats strong {
@@ -2684,13 +2691,13 @@ th,
 
 .kpi-sub {
   margin-top: 3px;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .metric-composite {
   gap: 5px;
   margin-top: 5px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .metric-pair {
@@ -2706,7 +2713,7 @@ th,
   min-height: 22px;
   margin: 4px 3px 0 0;
   padding: 2px 6px;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .panel {
@@ -2781,7 +2788,7 @@ th,
 }
 
 .scorecard-item .sub {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -2810,7 +2817,7 @@ th,
 .bar-label,
 .bar-label strong,
 .legend-item strong {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .donut-row {
@@ -2866,7 +2873,7 @@ td {
 
 .executive-brief .sub {
   margin: 6px 0 0 !important;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .executive-remediation .metric-composite {
@@ -2969,4 +2976,47 @@ td {
   .grid:has(> .card:nth-child(10):last-child) {
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   }
+}
+
+/* Centered blocking loading overlay shown while large reports parse and render. */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9980;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--bg, #0b1220) 88%, transparent);
+}
+
+.loading-overlay-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 26px;
+  border: 1px solid var(--border, #2b3b55);
+  border-radius: 14px;
+  background: var(--surface, #0b1220);
+  color: var(--text, #e5eefb);
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .45);
+}
+
+.loading-overlay-spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--surface-2, #142033);
+  border-top-color: var(--accent, #3b82f6);
+  animation: adposture-spin 0.9s linear infinite;
+}
+
+@keyframes adposture-spin {
+  to { transform: rotate(360deg); }
+}
+
+.table-more-row td {
+  text-align: center;
+  padding: 14px;
 }

@@ -108,10 +108,12 @@ function Export-ADPostureReport {
         switch ($step.Kind) {
             'Csv' {
                 @($step.Data) | Export-Csv -Path $step.Path -NoTypeInformation -Encoding UTF8 -ErrorAction Stop
+                Protect-ADPostureSensitiveFile -Path $step.Path
             }
             'AclEffectiveTrusteesCsv' {
                 ConvertTo-ADPostureAclEffectiveTrusteeExportRows -AclFindings @($step.Data) |
                     Export-Csv -Path $step.Path -NoTypeInformation -Encoding UTF8 -ErrorAction Stop
+                Protect-ADPostureSensitiveFile -Path $step.Path
             }
             'DashboardBuild' {
                 $dashboardData = Get-ADPostureDashboardPayload -Snapshot $Snapshot -RedactSensitiveAclEvidence:$RedactSensitiveAclEvidence
@@ -128,6 +130,7 @@ function Export-ADPostureReport {
             'Json' {
                 Write-Host '  Converting full snapshot to JSON...'
                 $step.Data | ConvertTo-Json -Depth 12 | Set-Content -Path $step.Path -Encoding UTF8 -ErrorAction Stop
+                Protect-ADPostureSensitiveFile -Path $step.Path
             }
         }
     }

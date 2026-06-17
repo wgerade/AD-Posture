@@ -2,6 +2,47 @@
 
 All notable changes to this project are documented here.
 
+## [1.3.0] - 2026-06-11
+
+### Added
+
+- Synthetic demo bundles `dashboard/demo-data.js` and `dashboard/demo-timeline-data.js`, used only as a last-resort fallback when no generated audit data exists. Demo mode shows a visible banner. The guided tour script (`dashboard/tour.js`) is reserved for the public demo page and is not loaded by the product dashboards.
+- `AuditedBy` field in snapshots and dashboard metadata so reports show which operator ran the audit alongside domain and timestamp.
+- Centered blocking "Loading audit report..." overlay while large reports parse and render, with a safety auto-dismiss so it can never stay stuck.
+- Cache-busting `?v=` version query on all static dashboard CSS/JS references so browsers reliably pick up updated code (generated data bundles stay unversioned for per-audit freshness).
+- `scripts/Export-ADPostureDashboardBundle.ps1` packages code and static catalogs into a ZIP for copying to a lab/management workstation without Git, excluding generated data, reports, local exceptions, logs, and key/cert material.
+- Access-path queue renders in batches of 300 with a "Show more" control, and the Safe playbooks queue shows readable finding context (member/group, trustee/right/target, GPO, template, zone) instead of raw GUIDs.
+- SID-first sensitive group resolution: well-known RIDs from `config/SensitiveGroups.json` resolve builtin aliases (`S-1-5-32-<rid>`), domain-relative groups (`<domainSid>-<rid>`), and forest-root-scoped groups before falling back to name lookup. Localized (for example pt-BR) and renamed built-in groups are now found.
+- Member-attribute fallback enumeration when `Get-ADGroupMember` fails on groups with foreign security principals, orphaned members, or size limits. Rows carry `MembershipEnumerationMode`, and failures emit warnings instead of silently dropping the group.
+- `ADPOSTURE_OUTPUT_ROOT` environment variable for writable `data/`, `reports/`, `dashboard/`, and `config/ApprovedExceptions.json` locations when the module is installed in a read-only path. `Open-ADPostureDashboard` syncs static dashboard assets to the output root.
+- Import validation for dashboard JSON files with a friendly error for non-report files.
+- Server-bound AD provider drives for directory ACL reads: ACL, GPO security-filter, and ADCS template/CA/NTAuth ACL collection now honor `-Server` instead of always using the default `AD:` drive, with `LDAP://<server>/<dn>` fallbacks.
+
+### Changed
+
+- Test suite migrated to Pester 5 (operator syntax plus `BeforeAll` setup); CI and `scripts/Invoke-ProjectChecks.ps1` now require Pester 5.x.
+
+- `-Server` now propagates to membership chain resolution and account enrichment, so pipeline audits of specific domain controllers read from the requested target.
+- Membership approved exceptions require at least one membership scope field (`sensitiveGroup`, `memberSam`, `memberSid`, `memberDn`, `accountType`); unscoped entries are ignored with a warning instead of silently matching every member.
+- Accounts without logon evidence are only marked stale when they are older than `-StaleDays`; recently created accounts keep their full risk weight.
+- CSV report exports and the full snapshot JSON now receive the same restrictive file ACL as JSON/JS artifacts.
+- Load-order override files were consolidated: `Resolve-ADGroupMembershipChainSafe.ps1`, `New-ADPostureRemediationScriptSafe.ps1`, `Write-ADPostureDashboardDataStatic.ps1`, and `Compare-ADPostureSnapshotsFullHistory.ps1` were merged into their canonical files and removed, together with the retired split-store writer.
+- `Get-ADSensitiveGroupCatalog` moved to `src/Public` to match its exported status.
+- Primary snapshot JSON is now serialized with depth 12 end to end.
+- `Open-ADPostureDashboard -View TrustPosture` opens `trusts.html` directly instead of the redirect page.
+- Dashboard pages load embedded data through static script tags; `bootstrap.js` and its `document.write` calls were removed.
+- `scripts/Install-ADPosture.ps1` no longer requires administrator rights.
+
+### Fixed
+
+- Sort indicators on sortable column headers rendered as broken characters (mojibake stored in the stylesheet); replaced with encoding-safe CSS arrow escapes.
+- Tables regained a fixed height with internal scrolling on every page (the Objects queue had grown into an endless page), and minimum dashboard font sizes were raised from 8-11px to 12px with higher-contrast muted/subtle text colors for readability.
+- Removed the exposure score donut ring, which truncated large cumulative scores; the numeric score remains.
+- `dashboard/dashboard-data.js` and `dashboard/timeline-data.js` are no longer tracked by Git; the synthetic tour data was moved to dedicated demo files so generated audit output can never be committed accidentally.
+- Module manifest version aligned with the changelog (manifest previously said 1.1.0 while the changelog was at 1.2.0).
+- Removed the dead legacy stylesheet `dashboard/styles.css`.
+- Removed duplicated pre-collector breakdown computation in `Invoke-ADPostureAudit`.
+
 ## [1.2.0] - 2026-06-05
 
 ### Added

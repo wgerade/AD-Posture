@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
   <title>AD Posture - Action Plan</title>
-  <link rel="stylesheet" href="styles-v2.css" />
+  <link rel="stylesheet" href="styles-v2.css?v=1.3.0" />
 </head>
 <body data-page="index.html">
 <div class="shell">
@@ -86,14 +86,7 @@
       </div>
       <div class="filter-summary" id="filter-summary" aria-live="polite"></div>
       <div class="score-hero">
-        <div class="ring-wrap">
-          <svg viewBox="0 0 80 80" aria-hidden="true">
-            <circle cx="40" cy="40" r="30" fill="none" stroke="var(--surface-2)" stroke-width="9"></circle>
-            <circle id="score-ring-fill" cx="40" cy="40" r="30" fill="none" stroke="var(--danger)" stroke-width="9" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 40 40)"></circle>
-          </svg>
-          <div class="ring-center"><span class="ring-num" id="ring-num">-</span><span class="ring-lbl">score</span></div>
-        </div>
-        <div class="score-info">
+                <div class="score-info">
           <div class="score-kpi-label">Exposure score</div>
           <div class="score-kpi-val" id="kpi-score">-</div>
           <div class="score-kpi-sub">Target: <span id="kpi-target">0</span> &nbsp; / &nbsp; Domain: <span id="kpi-domain">-</span></div>
@@ -243,9 +236,10 @@
     </main>
   </div>
 </div>
-  <script src="bootstrap.js"></script>
-  <script src="shared.js"></script>
-  <script src="app.js"></script>
-  <script src="table-tools.js"></script>
+  <script src="dashboard-data.js"></script>
+  <script src="demo-data.js?v=1.3.0"></script>
+  <script src="shared.js?v=1.3.0"></script>
+  <script src="app.js?v=1.3.0"></script>
+  <script src="table-tools.js?v=1.3.0"></script>
 </body>
 </html>

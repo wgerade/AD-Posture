@@ -1,7 +1,8 @@
-#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Validates RSAT/AD prerequisites and registers the module in the current profile.
+    Validates RSAT/AD prerequisites and registers the module in the current user profile.
+.NOTES
+    Writes only to the current user PowerShell profile; administrator rights are not required.
 #>
 $modulePath = Resolve-Path (Join-Path $PSScriptRoot '..')
 $profileDir = Split-Path $PROFILE.CurrentUserAllHosts -Parent

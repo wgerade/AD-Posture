@@ -1,8 +1,21 @@
 # Current State
 
-Last updated: 2026-06-05
+Last updated: 2026-06-11
 
 This file is the short working memory for the project. Read it before continuing implementation work.
+
+## Recent Changes (1.3.0)
+
+- Sensitive groups resolve by well-known SID first (`Resolve-ADPostureSensitiveGroupIdentity`), with name lookup as fallback; localized/renamed built-ins are found.
+- Membership resolution and account enrichment honor `-Server` through `-DomainParams`, and `Get-ADGroupMember` failures fall back to member-attribute enumeration (`MembershipEnumerationMode`).
+- Membership approved exceptions require at least one membership scope field; unscoped entries warn and are ignored.
+- Load-order override files (`*Safe`, `*Static`, `*FullHistory`) were merged into their canonical files and deleted.
+- `ADPOSTURE_OUTPUT_ROOT` selects a writable output root for data/reports/dashboard/exceptions.
+- Dashboards: `bootstrap.js` removed (static script tags), synthetic demo fallback via `demo-data.js`/`demo-timeline-data.js` with banner, JSON import validation, centered loading overlay, fixed-height scrolling tables, 300-row batched access-path rendering, readable playbook labels, no score donut, 12px font floor, encoding-safe sort arrows. `tour.js` is reserved for the public demo page and is not loaded by product pages.
+- Snapshots and dashboard meta carry `AuditedBy` (operator identity) alongside domain/timestamp.
+- `dashboard/dashboard-data.js` and `dashboard/timeline-data.js` are untracked again; the CI sensitive-artifact guard passes.
+- Test suite migrated to Pester 5 (5.7.1 in CI and project checks); see `docs/PESTER5-MIGRATION.md`.
+- Directory ACL reads (ACL collector, GPO security filtering, ADCS template/CA/NTAuth access) honor `-Server` through server-bound AD provider drives (`Get-ADPostureDirectoryAclPath.ps1`) with `LDAP://<server>/<dn>` fallback.
 
 ## Project Focus
 

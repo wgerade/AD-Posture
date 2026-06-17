@@ -29,6 +29,18 @@ function Test-ADPostureExceptionValueMatch {
     return $Value -like $Pattern
 }
 
+function Test-ADPostureExceptionHasMembershipScope {
+    param([object]$Entry)
+
+    foreach ($property in @('sensitiveGroup', 'memberSam', 'memberSid', 'memberDn', 'accountType')) {
+        if ($Entry.PSObject.Properties[$property] -and -not [string]::IsNullOrWhiteSpace([string]$Entry.$property)) {
+            return $true
+        }
+    }
+
+    $false
+}
+
 function Resolve-ADPostureApprovedException {
     [CmdletBinding()]
     param(
@@ -43,8 +55,22 @@ function Resolve-ADPostureApprovedException {
         [datetime]$AsOf = (Get-Date)
     )
 
+    if (-not $script:ADPostureWarnedUnscopedExceptionIds) {
+        $script:ADPostureWarnedUnscopedExceptionIds = @{}
+    }
+
     foreach ($entry in @($Catalog.Exceptions)) {
         if ($entry.enabled -eq $false) { continue }
+        # An entry with no membership scope fields would otherwise match every member of every group
+        # and silently remove the whole membership queue from the actionable score.
+        if (-not (Test-ADPostureExceptionHasMembershipScope -Entry $entry)) {
+            $entryId = if ($entry.id) { [string]$entry.id } else { '<no id>' }
+            if (-not $script:ADPostureWarnedUnscopedExceptionIds.ContainsKey($entryId)) {
+                $script:ADPostureWarnedUnscopedExceptionIds[$entryId] = $true
+                Write-Warning "Approved exception '$entryId' has no membership scope field (sensitiveGroup, memberSam, memberSid, memberDn, accountType) and was ignored for membership findings."
+            }
+            continue
+        }
         if (-not (Test-ADPostureExceptionValueMatch -Pattern $entry.sensitiveGroup -Value $SensitiveGroup)) { continue }
         if (-not (Test-ADPostureExceptionValueMatch -Pattern $entry.memberSam -Value $Enrichment.SamAccountName)) { continue }
         if (-not (Test-ADPostureExceptionValueMatch -Pattern $entry.memberSid -Value $Enrichment.ObjectSid)) { continue }

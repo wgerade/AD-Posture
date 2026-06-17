@@ -1,5 +1,8 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureTrustPosture.ps1')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureTrustPosture.ps1')
+
+}
 
 Describe 'Trust posture risk model' {
     It 'reports SID filtering and selective-authentication gaps on inbound external trusts' {
@@ -19,10 +22,10 @@ Describe 'Trust posture risk model' {
 
         $model = ConvertTo-ADPostureTrustRiskModel -Domain 'corp.example' -Trusts @($trust)
 
-        @($model.Trusts).Count | Should Be 1
-        @($model.TrustFindings | Where-Object FindingType -eq 'TrustSidFilteringDisabled').Count | Should Be 1
-        @($model.TrustFindings | Where-Object FindingType -eq 'TrustSelectiveAuthenticationDisabled').Count | Should Be 1
-        ($model.TrustFindings | Where-Object FindingType -eq 'TrustSidFilteringDisabled').Severity | Should Be 'Critical'
+        @($model.Trusts).Count | Should -Be 1
+        @($model.TrustFindings | Where-Object FindingType -eq 'TrustSidFilteringDisabled').Count | Should -Be 1
+        @($model.TrustFindings | Where-Object FindingType -eq 'TrustSelectiveAuthenticationDisabled').Count | Should -Be 1
+        ($model.TrustFindings | Where-Object FindingType -eq 'TrustSidFilteringDisabled').Severity | Should -Be 'Critical'
     }
 
     It 'reports transitive, forest, and TGT delegation trust exposure' {
@@ -43,10 +46,10 @@ Describe 'Trust posture risk model' {
 
         $model = ConvertTo-ADPostureTrustRiskModel -Domain 'corp.example' -Trusts @($trust)
 
-        @($model.TrustFindings | Where-Object FindingType -eq 'TrustExternalTransitive').Count | Should Be 1
-        @($model.TrustFindings | Where-Object FindingType -eq 'TrustForestTransitiveExposure').Count | Should Be 1
-        @($model.TrustFindings | Where-Object FindingType -eq 'TrustTgtDelegationEnabled').Count | Should Be 1
-        ($model.TrustFindings | Where-Object FindingType -eq 'TrustTgtDelegationEnabled').Severity | Should Be 'Critical'
+        @($model.TrustFindings | Where-Object FindingType -eq 'TrustExternalTransitive').Count | Should -Be 1
+        @($model.TrustFindings | Where-Object FindingType -eq 'TrustForestTransitiveExposure').Count | Should -Be 1
+        @($model.TrustFindings | Where-Object FindingType -eq 'TrustTgtDelegationEnabled').Count | Should -Be 1
+        ($model.TrustFindings | Where-Object FindingType -eq 'TrustTgtDelegationEnabled').Severity | Should -Be 'Critical'
     }
 
     It 'reports stale trust governance without active boundary gaps' {
@@ -65,7 +68,7 @@ Describe 'Trust posture risk model' {
 
         $model = ConvertTo-ADPostureTrustRiskModel -Domain 'corp.example' -Trusts @($trust) -StaleDays 365
 
-        @($model.TrustFindings | Where-Object FindingType -eq 'TrustStaleOrUnvalidated').Count | Should Be 1
-        @($model.TrustFindings | Where-Object FindingType -eq 'TrustSidFilteringDisabled').Count | Should Be 0
+        @($model.TrustFindings | Where-Object FindingType -eq 'TrustStaleOrUnvalidated').Count | Should -Be 1
+        @($model.TrustFindings | Where-Object FindingType -eq 'TrustSidFilteringDisabled').Count | Should -Be 0
     }
 }

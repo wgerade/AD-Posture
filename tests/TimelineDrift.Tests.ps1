@@ -1,20 +1,22 @@
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
+BeforeAll {
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
 
-function Get-ModuleConfig {
-    [pscustomobject]@{
-        DataPath = $TestDrive
+    function Get-ModuleConfig {
+        [pscustomobject]@{
+            DataPath = $TestDrive
+        }
     }
-}
 
-function Write-ADPostureTimelineDashboardData {
-    param($TimelineData)
-    $script:LastTimelineData = $TimelineData
-}
+    function Write-ADPostureTimelineDashboardData {
+        param($TimelineData)
+        $script:LastTimelineData = $TimelineData
+    }
 
-. (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
-. (Join-Path $repoRoot 'src\Private\Get-ADPostureTimelineHistoryPoints.ps1')
-. (Join-Path $repoRoot 'src\Public\Compare-ADPostureSnapshots.ps1')
-. (Join-Path $repoRoot 'src\Public\Compare-ADPostureSnapshotsFullHistory.ps1')
+    . (Join-Path $repoRoot 'src\Private\Protect-ADPostureFile.ps1')
+    . (Join-Path $repoRoot 'src\Private\Get-ADPostureTimelineHistoryPoints.ps1')
+    . (Join-Path $repoRoot 'src\Public\Compare-ADPostureSnapshots.ps1')
+
+}
 
 Describe 'Timeline ACL drift comparison' {
     It 'compares ACL findings and marks drift states' {
@@ -90,16 +92,16 @@ Describe 'Timeline ACL drift comparison' {
 
         $timeline = Compare-ADPostureSnapshots -BaselinePath $baselinePath -CurrentPath $currentPath
 
-        $timeline.IntegrityStatus | Should Be 'Valid'
-        $timeline.AclAddedCount | Should Be 1
-        $timeline.AclRemovedCount | Should Be 1
-        $timeline.AclUnchangedCount | Should Be 1
-        $timeline.AclNewCriticalHighCount | Should Be 1
-        $timeline.AclAdded[0].DriftState | Should Be 'New'
-        $timeline.AclRemoved[0].DriftState | Should Be 'Missing'
-        $timeline.AclUnchanged[0].DriftState | Should Be 'Unchanged'
-        $timeline.History[1].aclFindings | Should Be 2
-        $script:LastTimelineData.AclAddedCount | Should Be 1
+        $timeline.IntegrityStatus | Should -Be 'Valid'
+        $timeline.AclAddedCount | Should -Be 1
+        $timeline.AclRemovedCount | Should -Be 1
+        $timeline.AclUnchangedCount | Should -Be 1
+        $timeline.AclNewCriticalHighCount | Should -Be 1
+        $timeline.AclAdded[0].DriftState | Should -Be 'New'
+        $timeline.AclRemoved[0].DriftState | Should -Be 'Missing'
+        $timeline.AclUnchanged[0].DriftState | Should -Be 'Unchanged'
+        $timeline.History[1].aclFindings | Should -Be 2
+        $script:LastTimelineData.AclAddedCount | Should -Be 1
     }
 
     It 'marks timeline integrity warnings when a sidecar hash mismatches' {
@@ -117,9 +119,9 @@ Describe 'Timeline ACL drift comparison' {
 
         $timeline = Compare-ADPostureSnapshots -BaselinePath $baselinePath -CurrentPath $currentPath -WarningAction SilentlyContinue
 
-        $timeline.IntegrityStatus | Should Be 'Warning'
-        @($timeline.IntegrityWarnings).Count | Should Be 1
-        $timeline.Integrity.Current.Status | Should Be 'Mismatch'
+        $timeline.IntegrityStatus | Should -Be 'Warning'
+        @($timeline.IntegrityWarnings).Count | Should -Be 1
+        $timeline.Integrity.Current.Status | Should -Be 'Mismatch'
     }
 
     It 'builds full timeline history while skipping invalid snapshots' {
@@ -141,10 +143,10 @@ Describe 'Timeline ACL drift comparison' {
 
         $history = Get-ADPostureTimelineHistoryPoints -DataDirectory $TestDrive -WarningAction SilentlyContinue
 
-        @($history).Count | Should Be 2
-        @($history.auditId) -contains 'audit-1' | Should Be $true
-        @($history.auditId) -contains 'audit-3' | Should Be $true
-        @($history.auditId) -contains 'audit-2' | Should Be $false
+        @($history).Count | Should -Be 2
+        @($history.auditId) -contains 'audit-1' | Should -Be $true
+        @($history.auditId) -contains 'audit-3' | Should -Be $true
+        @($history.auditId) -contains 'audit-2' | Should -Be $false
     }
 
     It 'enriches automatic comparison with all valid history and current metadata' {
@@ -169,10 +171,10 @@ Describe 'Timeline ACL drift comparison' {
 
         $timeline = Compare-ADPostureSnapshots -UseLatestTwo -DataDirectory $TestDrive
 
-        @($timeline.History).Count | Should Be 5
-        $timeline.CurrentAuditId | Should Be 'june-audit-3'
-        $timeline.Domain | Should Be 'contoso.local'
-        $timeline.SchemaVersion | Should Be '1.2'
-        @($script:LastTimelineData.History).Count | Should Be 5
+        @($timeline.History).Count | Should -Be 5
+        $timeline.CurrentAuditId | Should -Be 'june-audit-3'
+        $timeline.Domain | Should -Be 'contoso.local'
+        $timeline.SchemaVersion | Should -Be '1.2'
+        @($script:LastTimelineData.History).Count | Should -Be 5
     }
 }

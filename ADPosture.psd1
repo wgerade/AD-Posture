@@ -1,6 +1,6 @@
 @{
     RootModule        = 'ADPosture.psm1'
-    ModuleVersion     = '1.1.0'
+    ModuleVersion     = '1.3.0'
     GUID              = 'a7f3c2e1-9b4d-4a6f-8e2c-1d5b7a9e0f3c'
     Author            = 'AD Posture'
     CompanyName       = 'Local'
@@ -22,7 +22,7 @@
     RequiredModules   = @()
     PrivateData       = @{
         PSData = @{
-            Tags       = @(
+            Tags         = @(
                 'ActiveDirectory',
                 'ADSecurity',
                 'IdentitySecurity',
@@ -44,8 +44,9 @@
                 'MITREATTACK',
                 'Pester'
             )
-            LicenseUri = 'https://polyformproject.org/licenses/noncommercial/1.0.0/'
-            ProjectUri = 'https://github.com/wgerade/AD-Posture'
+            LicenseUri   = 'https://polyformproject.org/licenses/noncommercial/1.0.0/'
+            ProjectUri   = 'https://github.com/wgerade/AD-Posture'
+            ReleaseNotes = 'See CHANGELOG.md'
         }
     }
 }

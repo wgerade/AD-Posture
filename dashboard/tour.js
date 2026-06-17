@@ -1,4 +1,6 @@
-/* AD Posture guided tour for the existing dashboard UI. */
+/* AD Posture guided tour.
+   NOT loaded by the product dashboard pages. This script is reserved for the public
+   marketing/demo page (GitHub Pages) where it can be included together with demo-data.js. */
 (function () {
   'use strict';
 
@@ -42,7 +44,7 @@
     ],
     'adcs.html': [
       ['.content', 'ADCS overview', 'This page reviews certificate services posture, including risky templates, CA exposure, enrollment risk, and control delegation.'],
-      ['.grid', 'ADCS metrics', 'These cards summarize certificate template and CA exposure using the loaded synthetic or imported data.'],
+      ['.grid', 'ADCS metrics', 'These cards summarize certificate template and CA exposure for the loaded report.'],
       ['table', 'ADCS findings', 'Findings highlight certificate template escalation paths, authentication EKUs, enrollment permissions, and recommended remediation.']
     ],
     'auth.html': [
@@ -147,11 +149,13 @@
   }
 
   function hasAutoStartBeenDismissed() {
+    try { if (localStorage.getItem(autoStartDismissedKey) === '1') return true; } catch (_) { /* no-op */ }
     try { return sessionStorage.getItem(autoStartDismissedKey) === '1'; }
     catch (_) { return false; }
   }
 
   function markAutoStartDismissed() {
+    try { localStorage.setItem(autoStartDismissedKey, '1'); } catch (_) { /* no-op */ }
     try { sessionStorage.setItem(autoStartDismissedKey, '1'); }
     catch (_) { /* no-op */ }
   }
@@ -224,6 +228,7 @@
     `;
 
     card.querySelector('[data-tour-stop]').addEventListener('click', endTour);
+    card.querySelector('[data-tour-next]')?.focus({ preventScroll: true });
     card.querySelector('[data-tour-prev]').addEventListener('click', () => {
       if (state.stepIndex > 0) {
         state.stepIndex -= 1;
@@ -299,6 +304,18 @@
     }[char]));
   }
 
+  function scheduleDemoAutoStart() {
+    if (page !== 'index.html' || hasAutoStartBeenDismissed()) return;
+    const begin = () => {
+      if (!state.active && !hasAutoStartBeenDismissed()) setTimeout(() => startTour(false), 700);
+    };
+    if (window.__AD_POSTURE_DEMO__) {
+      begin();
+      return;
+    }
+    document.addEventListener('adposture:demo', begin, { once: true });
+  }
+
   function init() {
     installStyles();
     addButton();
@@ -307,11 +324,12 @@
       setTimeout(() => startTour(true), 350);
       return;
     }
-    if (page === 'index.html' && !hasAutoStartBeenDismissed()) {
-      setTimeout(() => startTour(false), 700);
-    }
+    scheduleDemoAutoStart();
   }
 
+  window.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && state.active) endTour();
+  });
   window.addEventListener('resize', () => {
     if (state.active && activeTarget) positionCard(activeTarget);
   });

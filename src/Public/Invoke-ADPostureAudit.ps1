@@ -243,6 +243,17 @@ function Invoke-ADPostureAuditTarget {
         $dcComputers = @()
     }
 
+    $forestRootDomainSid = $domain.DomainSID.Value
+    if ($forest.RootDomain -and $forest.RootDomain -ne $domain.DNSRoot) {
+        try {
+            $forestRootDomainSid = (Get-ADDomain -Identity $forest.RootDomain -ErrorAction Stop).DomainSID.Value
+        }
+        catch {
+            Write-ADPostureLog -Message "Could not read the forest root domain SID for $($forest.RootDomain); forest-scoped group SID resolution will use the audited domain. $($_.Exception.Message)" -Level Warning -Path $LogPath
+            $forestRootDomainSid = $domain.DomainSID.Value
+        }
+    }
+
     $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $findings = [System.Collections.Generic.List[object]]::new()
     $groupSummaries = [System.Collections.Generic.List[object]]::new()
@@ -272,19 +283,14 @@ function Invoke-ADPostureAuditTarget {
 
         $identity = $null
         try {
-            $groupFilterName = ConvertTo-ADPostureADFilterLiteral -Value $g.Name
-            if ($g.Tier -eq 'Builtin') {
-                $identity = Get-ADGroup -Filter "Name -eq '$groupFilterName'" -SearchBase ("CN=Builtin," + $domain.DistinguishedName) @domainParams -ErrorAction Stop
-            }
-            elseif ($g.Tier -eq 'Forest') {
-                $identity = Get-ADGroup -Filter "Name -eq '$groupFilterName'" -SearchBase $forest.PartitionsContainer @domainParams -ErrorAction SilentlyContinue
-                if (-not $identity) {
-                    $identity = Get-ADGroup -Filter "Name -eq '$groupFilterName'" @domainParams -ErrorAction SilentlyContinue
-                }
-            }
-            else {
-                $identity = Get-ADGroup -Filter "Name -eq '$groupFilterName'" @domainParams -ErrorAction SilentlyContinue
-            }
+            $identity = Resolve-ADPostureSensitiveGroupIdentity `
+                -CatalogEntry $g `
+                -DomainSid $domain.DomainSID.Value `
+                -ForestRootDomainSid $forestRootDomainSid `
+                -BuiltinSearchBase ("CN=Builtin," + $domain.DistinguishedName) `
+                -ForestPartitionsContainer $forest.PartitionsContainer `
+                -DomainParams $domainParams `
+                -WellKnownRids $Catalog.WellKnownRids
         }
         catch {
             $groupsMissing.Add($g.Name)
@@ -312,7 +318,7 @@ function Invoke-ADPostureAuditTarget {
         }
 
         try {
-            $memberships = Resolve-ADGroupMembershipChain -GroupIdentity $identity.DistinguishedName
+            $memberships = Resolve-ADGroupMembershipChain -GroupIdentity $identity.DistinguishedName -DomainParams $domainParams
         }
         catch {
             $groupsMissing.Add($g.Name)
@@ -328,7 +334,7 @@ function Invoke-ADPostureAuditTarget {
 
         foreach ($row in $memberships) {
             try {
-                $enrich = Get-AccountEnrichment -Principal $row.Member -DomainControllerDnsNames $dcComputers -StaleDays $StaleDays -PasswordAgeDays $PasswordAgeDays
+                $enrich = Get-AccountEnrichment -Principal $row.Member -DomainControllerDnsNames $dcComputers -StaleDays $StaleDays -PasswordAgeDays $PasswordAgeDays -DomainParams $domainParams
             }
             catch {
                 $memberName = if ($row.Member -and $row.Member.SamAccountName) { $row.Member.SamAccountName } else { '<unknown>' }
@@ -417,6 +423,7 @@ function Invoke-ADPostureAuditTarget {
                 IsDirect                      = $row.IsDirectMembership
                 NestingDepth                  = $row.NestingDepth
                 TruncatedNesting              = [bool]$row.TruncatedNesting
+                MembershipEnumerationMode     = if ($row.PSObject.Properties['MembershipEnumerationMode']) { $row.MembershipEnumerationMode } else { 'Standard' }
                 MembershipChain               = $row.ChainDisplay
                 AccountStatus                 = $enrich.AccountStatus
                 IsEnabled                     = $enrich.IsEnabled
@@ -497,27 +504,10 @@ function Invoke-ADPostureAuditTarget {
         })
     }
 
+    # Membership-only active findings feed ActionableCount; aggregate breakdowns are computed below
+    # once all posture domains have been collected.
     $activeFindings = $findings | Where-Object { -not $_.IsExcluded -and $_.RiskScore -gt 0 }
-    $overall = 0.0
-    if ($activeFindings) {
-        $overall = [Math]::Round(($activeFindings | Measure-Object -Property RiskScore -Sum).Sum, 2)
-    }
 
-    $byDifficulty = @{
-        Low    = ($findings | Where-Object { $_.RemediationDifficulty -eq 'Low' -and -not $_.IsExcluded }).Count
-        Medium = ($findings | Where-Object { $_.RemediationDifficulty -eq 'Medium' -and -not $_.IsExcluded }).Count
-        High   = ($findings | Where-Object { $_.RemediationDifficulty -eq 'High' -and -not $_.IsExcluded }).Count
-    }
-
-    $byPrivilegeTier = @{
-        'Tier 0' = ($findings | Where-Object { $_.PrivilegeTier -eq 'Tier 0' -and -not $_.IsExcluded }).Count
-        'Tier 1' = ($findings | Where-Object { $_.PrivilegeTier -eq 'Tier 1' -and -not $_.IsExcluded }).Count
-        'Tier 2' = ($findings | Where-Object { $_.PrivilegeTier -eq 'Tier 2' -and -not $_.IsExcluded }).Count
-    }
-
-    $approvedExceptions = @($findings | Where-Object { $_.IsApprovedException -and $_.ApprovedExceptionStatus -eq 'Active' })
-    $expiredExceptions = @($findings | Where-Object { $_.IsApprovedException -and $_.ApprovedExceptionStatus -eq 'Expired' })
-    $readiness = Get-ADPostureReadinessScorecard -Findings @($findings) -OverallRiskScore $overall -ExpiredExceptionCount @($expiredExceptions).Count
     $aclRiskModel = [pscustomobject]@{ AclFindings = @() }
     if ($IncludeAclPosture) {
         if ($IncludeAclAllObjects -and $AclReadDelayMilliseconds -eq 0) {
@@ -607,6 +597,7 @@ function Invoke-ADPostureAuditTarget {
         Sensitivity          = 'Sensitive - contains AD posture topology, DNs, SIDs, account metadata, and remediation context'
         AuditId              = [guid]::NewGuid().ToString()
         Timestamp            = (Get-Date).ToString('o')
+        AuditedBy            = Get-ADPostureOperatorIdentity
         Domain               = $domain.DNSRoot
         Forest               = $forest.Name
         DomainMode           = $domain.DomainMode
@@ -657,7 +648,7 @@ function Invoke-ADPostureAuditTarget {
         $outputStarted = Get-Date
         Write-Progress -Id $outputProgressId -Activity 'Writing AD Posture outputs' -Status 'Step 1/3: converting primary snapshot to JSON.' -PercentComplete 0
         Write-Host 'Writing primary snapshot JSON...'
-        $snapshotJson = $snapshot | ConvertTo-Json -Depth 8
+        $snapshotJson = $snapshot | ConvertTo-Json -Depth 12
         Write-ADPostureAtomicTextFile -Path $jsonPath -Value $snapshotJson
         Write-ADPostureAtomicTextFile -Path $latestSnapshotPath -Value $snapshotJson
         Write-Progress -Id $outputProgressId -Activity 'Writing AD Posture outputs' -Status 'Step 2/3: applying file protection and integrity sidecar.' -PercentComplete 33

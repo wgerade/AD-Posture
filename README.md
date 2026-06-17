@@ -16,7 +16,8 @@ AD Posture complements Microsoft Defender for Identity (MDI), SIEM, GRC, and EDR
 ## Highlights
 
 - Sensitive group audit for built-in, domain, forest, Exchange, and optional groups.
-- Full nested membership chain resolution.
+- SID-first group resolution by well-known RID, so localized (for example pt-BR) and renamed built-in groups are still found.
+- Full nested membership chain resolution with member-attribute fallback when `Get-ADGroupMember` cannot enumerate a group.
 - Automatic Tier 0 / Tier 1 / Tier 2 classification from `config\TieringModel.json`.
 - Cumulative risk score from 0 to unlimited, where 0 means nothing to correct.
 - Per-finding score explanation with formula, score components, and technical risk context.
@@ -33,6 +34,7 @@ AD Posture complements Microsoft Defender for Identity (MDI), SIEM, GRC, and EDR
 - Optional ADCS posture for risky certificate templates, published CAs, CA policy configuration, broad enrollment, enrollment-agent exposure, exportable authentication private keys, broad template/CA/NTAuth control delegation, Any Purpose/no-EKU exposure, and ESC-style attack paths.
 - Dark operations dashboard with tier donut, remediation bars, account type mix, top group exposure, fix impact, account exposure, and expandable access-path details.
 - CSV/JSON exports plus embedded dashboard data for local HTML viewing.
+- Synthetic demo mode for first-run exploration without an audit.
 - Pester tests, PSScriptAnalyzer settings, and GitHub Actions CI.
 
 ## Demo
@@ -348,6 +350,14 @@ Telemetry-only attack paths are not emitted as automatic findings until an event
 | `dashboard\dashboard-data.js` | Embedded data for local `file://` dashboard use |
 | `config\ApprovedExceptions.json` | Governed sensitive-group baseline exceptions |
 
+By default all generated artifacts are written under the module folder. When the module is installed in a read-only location (for example a `PSModulePath` under `Program Files`), set the `ADPOSTURE_OUTPUT_ROOT` environment variable to a writable working directory. `data\`, `reports\`, the dashboard bundle, and the operator-managed `config\ApprovedExceptions.json` are then created under that root, and `Open-ADPostureDashboard` copies the static dashboard pages there automatically:
+
+```powershell
+$env:ADPOSTURE_OUTPUT_ROOT = 'D:\ADPosture-Workspace'
+Invoke-ADPostureAudit
+Open-ADPostureDashboard -View Current
+```
+
 Generated artifacts have no automatic retention or destructive cleanup policy. Store them only on access-controlled, preferably encrypted storage; define retention and disposal according to local governance; and manually remove snapshots, reports, dashboard payloads, timeline files, screenshots, logs, and remediation scripts when their approved retention period ends. Review the target paths before deletion.
 
 ## Dashboards
@@ -367,6 +377,8 @@ Open-ADPostureDashboard -View Executive
 ```
 
 `Open-ADPostureDashboard` opens the selected local HTML page directly. It refreshes `dashboard-data.js` from `reports\latest-dashboard.json` only when the embedded bundle is missing or older than the report. No localhost service or persistent PowerShell process is started. The Objects view paginates its local table at 100 rows while KPIs and profiles continue to use the complete embedded report.
+
+When no generated audit data exists (for example a fresh clone), the dashboards fall back to an embedded synthetic `corp.example` demo bundle and show a visible "synthetic demo data" banner. Demo data never mixes with generated audit output: real audits write `dashboard-data.js`, which always takes precedence. The guided tour script (`dashboard/tour.js`) is not loaded by the product pages; it is reserved for the public demo page.
 
 Manual pages:
 
@@ -579,6 +591,7 @@ Invoke-ADPostureArtifactRetention -Remove
 
 Built-in safety controls:
 
+- Generated snapshots, dashboard payloads, CSV reports, and JS bundles receive a restrictive owner/SYSTEM file ACL on write.
 - Generated snapshots and dashboard payloads include a sensitivity marker.
 - Dashboard pages include a restrictive Content Security Policy and no-referrer policy.
 - Dashboard pages show visible sensitive-data handling banners.

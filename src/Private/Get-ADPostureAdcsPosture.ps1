@@ -298,18 +298,21 @@ function ConvertFrom-ADPostureAdcsObjectAccessRules {
 
 function Get-ADPostureAdcsObjectAccess {
     [CmdletBinding()]
-    param([string]$DistinguishedName)
+    param(
+        [string]$DistinguishedName,
+        [hashtable]$DomainParams
+    )
 
     if (-not $DistinguishedName) { return [pscustomobject]@{ ControlPrincipals = @() } }
 
     try {
-        $acl = Get-Acl -LiteralPath "AD:\$DistinguishedName" -ErrorAction Stop
+        $acl = Get-Acl -LiteralPath (Get-ADPostureAdAclPath -DistinguishedName $DistinguishedName -DomainParams $DomainParams) -ErrorAction Stop
         return ConvertFrom-ADPostureAdcsObjectAccessRules -AccessRules @($acl.Access)
     }
     catch {
         $providerError = $_.Exception.Message
         try {
-            $entry = [System.DirectoryServices.DirectoryEntry]::new("LDAP://$DistinguishedName")
+            $entry = [System.DirectoryServices.DirectoryEntry]::new((Get-ADPostureLdapPath -DistinguishedName $DistinguishedName -DomainParams $DomainParams))
             $rules = @($entry.ObjectSecurity.GetAccessRules($true, $true, [System.Security.Principal.NTAccount]))
             return ConvertFrom-ADPostureAdcsObjectAccessRules -AccessRules $rules
         }
@@ -620,18 +623,21 @@ function ConvertTo-ADPostureAdcsRiskModel {
 
 function Get-ADPostureAdcsTemplateAccess {
     [CmdletBinding()]
-    param([string]$DistinguishedName)
+    param(
+        [string]$DistinguishedName,
+        [hashtable]$DomainParams
+    )
 
     if (-not $DistinguishedName) { return [pscustomobject]@{ EnrollmentPrincipals = @(); AutoEnrollmentPrincipals = @(); ControlPrincipals = @() } }
 
     try {
-        $acl = Get-Acl -LiteralPath "AD:\$DistinguishedName" -ErrorAction Stop
+        $acl = Get-Acl -LiteralPath (Get-ADPostureAdAclPath -DistinguishedName $DistinguishedName -DomainParams $DomainParams) -ErrorAction Stop
         return ConvertFrom-ADPostureAdcsTemplateAccessRules -AccessRules @($acl.Access)
     }
     catch {
         $providerError = $_.Exception.Message
         try {
-            $entry = [System.DirectoryServices.DirectoryEntry]::new("LDAP://$DistinguishedName")
+            $entry = [System.DirectoryServices.DirectoryEntry]::new((Get-ADPostureLdapPath -DistinguishedName $DistinguishedName -DomainParams $DomainParams))
             $rules = @($entry.ObjectSecurity.GetAccessRules($true, $true, [System.Security.Principal.NTAccount]))
             return ConvertFrom-ADPostureAdcsTemplateAccessRules -AccessRules $rules
         }
@@ -682,7 +688,7 @@ function Get-ADPostureAdcsPosture {
     try {
         $templates = @(Get-ADObject -SearchBase $templatesDn -LDAPFilter '(objectClass=pKICertificateTemplate)' -Properties DisplayName,pKIExtendedKeyUsage,msPKI-Certificate-Name-Flag,msPKI-Enrollment-Flag,msPKI-Private-Key-Flag,msPKI-RA-Signature,msPKI-Template-Schema-Version @queryParams -ErrorAction Stop | ForEach-Object {
             $template = ConvertTo-ADPostureAdcsTemplateObject -InputObject $_
-            $access = Get-ADPostureAdcsTemplateAccess -DistinguishedName $template.DistinguishedName
+            $access = Get-ADPostureAdcsTemplateAccess -DistinguishedName $template.DistinguishedName -DomainParams $queryParams
             $template | Add-Member -NotePropertyName EnrollmentPrincipals -NotePropertyValue @($access.EnrollmentPrincipals) -Force
             $template | Add-Member -NotePropertyName AutoEnrollmentPrincipals -NotePropertyValue @($access.AutoEnrollmentPrincipals) -Force
             $template | Add-Member -NotePropertyName ControlPrincipals -NotePropertyValue @($access.ControlPrincipals) -Force
@@ -698,7 +704,7 @@ function Get-ADPostureAdcsPosture {
     try {
         $cas = @(Get-ADObject -SearchBase $enrollmentServicesDn -LDAPFilter '(objectClass=pKIEnrollmentService)' -Properties DisplayName,dNSHostName,certificateTemplates @queryParams -ErrorAction Stop | ForEach-Object {
             $ca = ConvertTo-ADPostureAdcsCaObject -InputObject $_
-            $access = Get-ADPostureAdcsObjectAccess -DistinguishedName $ca.DistinguishedName
+            $access = Get-ADPostureAdcsObjectAccess -DistinguishedName $ca.DistinguishedName -DomainParams $queryParams
             $configuration = Get-ADPostureAdcsCaRegistryConfiguration -Ca $ca
             $ca | Add-Member -NotePropertyName ControlPrincipals -NotePropertyValue @($access.ControlPrincipals) -Force
             $ca | Add-Member -NotePropertyName Configuration -NotePropertyValue $configuration -Force
@@ -718,7 +724,7 @@ function Get-ADPostureAdcsPosture {
     try {
         $ntAuthObject = Get-ADObject -Identity $ntAuthDn -Properties cACertificate @queryParams -ErrorAction Stop
         $ntAuth = ConvertTo-ADPostureAdcsNtAuthObject -InputObject $ntAuthObject
-        $access = Get-ADPostureAdcsObjectAccess -DistinguishedName $ntAuth.DistinguishedName
+        $access = Get-ADPostureAdcsObjectAccess -DistinguishedName $ntAuth.DistinguishedName -DomainParams $queryParams
         $ntAuth | Add-Member -NotePropertyName ControlPrincipals -NotePropertyValue @($access.ControlPrincipals) -Force
     }
     catch {
